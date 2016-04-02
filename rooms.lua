@@ -23,15 +23,55 @@ roomDatabase = {
    home = { width = 64, height = 64,
       doors = {
          { side = "left", start = 26, finish = 37, to = "magnetpuzzle1" },
-         { side = "up", start = 26, finish = 37, to = "home" },
+         { side = "up", start = 26, finish = 37, to = "passage2", to_x = 87 },
          { side = "right", start = 26, finish = 37, to = "miasma1" },
          { side = "down", start = 26, finish = 37, to = "home" }
       }
    },
 
+   passage1 = { width = 24, height = 24,
+      doors = {
+         { side = "up", start = 9, finish = 14, to = "passage2" }
+      },
+      floor = {
+         { style = "points", mark = "drawing", 
+            points = { 
+               { x = 11, y = 11 },
+               { x = 12, y = 11 },
+               { x = 12, y = 12 },
+               { x = 11, y = 12 },
+
+               { x = 9, y = 11 },
+               { x = 10, y = 10 },
+               { x = 11, y = 10 },
+               { x = 12, y = 10 },
+               { x = 13, y = 10 },
+               { x = 14, y = 11 },
+
+               { x = 8, y = 12 },
+               { x = 9, y = 13 },
+               { x = 10, y = 14 },
+               { x = 11, y = 14 },
+               { x = 12, y = 14 },
+               { x = 13, y = 14 },
+               { x = 14, y = 13 }, 
+               { x = 15, y = 12 }, 
+            }
+         }
+      }
+   },
+
+   passage2 = { width = 100, height = 16,
+      doors = {
+         { side = "down", start = 9, finish = 14, to = "passage1" },
+         { side = "down", start = 83, finish = 94, to = "home", to_x = 29 }
+      },
+      floor = {
+      }
+   },
+
    magnetpuzzle1 = { width = 64, height = 64,
       active = true,
-      regenerate = true,
       doors = {
          { side = "left", start = 26, finish = 37, to = "home" },
          { side = "right", start = 26, finish = 37, to = "home" }
@@ -41,7 +81,9 @@ roomDatabase = {
       },
 
       objects = {
-         { class = "block", color = "red", magnetic = true, x = 30, y = 30, width = 4, height = 4 }
+         { id = "b1", class = "block", color = "red", magnetic = true, x = 30, y = 30, width = 4, height = 4 },
+         { id = "b2", class = "block", color = "red", magnetic = true, resistance = 2, x = 10, y = 40, width = 6, height = 12 },
+         { id = "b3", class = "block", color = "red", magnetic = true, resistance = 6, x = 40, y = 10, width = 16, height = 24 }
       }
    },
 

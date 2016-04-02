@@ -14,12 +14,25 @@ speed = 1
 local player
 local current_room
 local prev_room
+local camera = { x = 0, y = 0 }
+local speed = 1
+local zoom = 10
 
 -- Constants
 
+CAMERA_EDGE = 20
+
 MIASMA_SPREAD_CHANCE = 0.1
+
 MAGNET_LINE_TIME = 6
-MAX_VELOCITY = 30
+
+BASE_SPEED = 1
+MAGNET_SPEED = 4
+
+MAX_VELOCITY = 29
+
+WARP_EFFECT_ALPHA = 20
+WARP_EFFECT_DURATION = 24
 
 -- Colors
 
@@ -66,6 +79,14 @@ function deTranslateRotate( dx, dy, direction )
    gfx.translate( -dx, -dy )
 end
 
+function shallowcopy( orig )
+   local copy = {}
+   for key, value in pairs( orig ) do
+      copy[key] = value
+   end
+   return copy
+end
+
 --- Window
 
 function setZoom( z )
@@ -88,7 +109,6 @@ function moveObject( object, dx, dy )
    if objectStaticCollisions( object, new_x, new_y ) then take_back = true end
 
    if not take_back then
-      -- TODO Update grid
       for x=object.x,object.x+object.width-1 do
          for y=object.y,object.y+object.height-1 do
             current_room.grid[x][y].obj = nil
@@ -112,13 +132,17 @@ function drawObjects()
    for _,object in ipairs(current_room.objects) do
 
       if object.class == "block" then
-         if object.color == "red" then gfx.setColor( RED_MAGNET ) end
+         if object.multicolor then
 
-         gfx.rectangle( "fill", object.x, object.y, object.width, object.height )
+         else
+            if object.color == "red" then gfx.setColor( RED_MAGNET ) end
 
-         if object.color == "red" then gfx.setColor( RED_MAGNET_EDGE ) end
+            gfx.rectangle( "fill", object.x, object.y, object.width, object.height )
 
-         gfx.rectangle( "line", object.x+1, object.y+1, object.width-1, object.height-1 )
+            if object.color == "red" then gfx.setColor( RED_MAGNET_EDGE ) end
+
+            gfx.rectangle( "line", object.x+1, object.y+1, object.width-1, object.height-1 )
+         end
       end
    end
 end
@@ -143,8 +167,8 @@ function generateRoom( input )
                   active = input.active, 
                   regenerate = input.regenerate, 
                   objects = { },
-                  camera = { 0, 0 } }
-   
+                }
+
    if input.custom_grid then
       room.grid = input.custom_grid
    else
@@ -153,45 +177,45 @@ function generateRoom( input )
       for i=0,room.width-1 do
          room.grid[i] = {}
          for j=0,room.height-1 do
-            room.grid[i][j] = { nil }
+            room.grid[i][j] = { id=nil }
          end
       end
 
       -- Base Walls
       for i=0,room.width-1 do
-         room.grid[i][0] = { 'wall' }
-         room.grid[i][1] = { 'wall' }
-         room.grid[i][room.height-1] = { 'wall' }
-         room.grid[i][room.height-2] = { 'wall' }
+         room.grid[i][0] = { id='wall' }
+         room.grid[i][1] = { id='wall' }
+         room.grid[i][room.height-1] = { id='wall' }
+         room.grid[i][room.height-2] = { id='wall' }
       end
       for j=0,room.height-1 do
-         room.grid[0][j] = { 'wall' }
-         room.grid[1][j] = { 'wall' }
-         room.grid[room.height-1][j] = { 'wall' }
-         room.grid[room.height-2][j] = { 'wall' }
+         room.grid[0][j] = { id='wall' }
+         room.grid[1][j] = { id='wall' }
+         room.grid[room.width-1][j] = { id='wall' }
+         room.grid[room.width-2][j] = { id='wall' }
       end
 
       if input.doors then
          for _,door in ipairs(input.doors) do
             if door.side == 'up' then
                for i=door.start,door.finish do
-                  room.grid[i][0] = { 'door', door.side, door.to }
-                  room.grid[i][1] = { nil }
+                  room.grid[i][0] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
+                  room.grid[i][1] = { id=nil }
                end
             elseif door.side == 'down' then
                for i=door.start,door.finish do
-                  room.grid[i][room.height-1] = { 'door', door.side, door.to }
-                  room.grid[i][room.height-2] = { nil }
+                  room.grid[i][room.height-1] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
+                  room.grid[i][room.height-2] = { id=nil }
                end
             elseif door.side == 'right' then
                for j=door.start,door.finish do
-                  room.grid[room.width-1][j] = { 'door', door.side, door.to }
-                  room.grid[room.width-2][j] = { nil }
+                  room.grid[room.width-1][j] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
+                  room.grid[room.width-2][j] = { id=nil }
                end
             elseif door.side == 'left' then
                for j=door.start,door.finish do
-                  room.grid[0][j] = { 'door', door.side, door.to }
-                  room.grid[1][j] = { nil }
+                  room.grid[0][j] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
+                  room.grid[1][j] = { id=nil }
                end
             end
          end
@@ -204,7 +228,7 @@ function generateRoom( input )
                local cur = {}
                cur.x = geometry.start.x
                cur.y = geometry.start.y
-               room.grid[cur.x][cur.y] = { geometry.mark }
+               room.grid[cur.x][cur.y] = { id=geometry.mark }
                for _,move in ipairs(geometry.moves) do
                   local dx = 0
                   local dy = 0
@@ -216,14 +240,14 @@ function generateRoom( input )
                   for i=1,move.dist do
                      cur.x = cur.x + dx
                      cur.y = cur.y + dy
-                     room.grid[cur.x][cur.y] = { geometry.mark }
+                     room.grid[cur.x][cur.y] = { id=geometry.mark }
                   end
                end
             end
 
             if geometry.style == "points" then
                for _,point in ipairs(geometry.points) do
-                  room.grid[point.x][point.y] = { geometry.mark }
+                  room.grid[point.x][point.y] = { id=geometry.mark }
                end
             end
 
@@ -235,16 +259,20 @@ function generateRoom( input )
                if object.class == "miasma" then
                   for x=object.x,object.x+object.width-1 do
                      for y=object.y,object.y+object.height-1 do
-                        room.grid[x][y] = { "miasma" }
+                        room.grid[x][y] = { id="miasma", miasma=true }
                      end
                   end
                end
 
                if object.class == "block" then
-                  table.insert(room.objects, object )
-                  for x=object.x,object.x+object.width-1 do
-                     for y=object.y,object.y+object.height-1 do
-                        room.grid[x][y].obj = object
+                  local obj = shallowcopy( object )
+                  table.insert(room.objects, obj )
+                  if obj.resistance then
+                     obj.resistance_left = obj.resistance
+                  end
+                  for x=obj.x,obj.x+obj.width-1 do
+                     for y=obj.y,obj.y+obj.height-1 do
+                        room.grid[x][y].obj = obj
                      end
                   end
                end
@@ -261,7 +289,7 @@ function updateRoom()
 
    for i=0,current_room.width-1 do
       for j=0,current_room.height-1 do
-         if current_room.grid[i][j][1] == 'miasma' then 
+         if current_room.grid[i][j].miasma then 
             -- Chance to spread
             if math.random() < MIASMA_SPREAD_CHANCE then
                -- select direction
@@ -275,8 +303,8 @@ function updateRoom()
                elseif r_dir == 4 then y = y + 1 end
 
                if x >= 0 and x < current_room.width and y >= 0 and y < current_room.height then
-                  if current_room.grid[x][y][1] ~= 'wall' then 
-                     current_room.grid[x][y] = { "miasma" }
+                  if current_room.grid[x][y].id ~= 'wall' then 
+                     current_room.grid[x][y].miasma = true
                   end
                end
             end
@@ -293,11 +321,20 @@ function updateRoom()
       local mt = player.magnet_target
       -- Apply magnet force
 
-      if (player.facing == "down" and player.magnet_pull) or (player.facing == "up" and not player.magnet_pull) then mt.velocity.y = mt.velocity.y + 1 end
-      if (player.facing == "up" and player.magnet_pull) or (player.facing == "down" and not player.magnet_pull) then mt.velocity.y = mt.velocity.y - 1 end
-      if (player.facing == "right" and player.magnet_pull) or (player.facing == "left" and not player.magnet_pull) then mt.velocity.x = mt.velocity.x + 1 end
-      if (player.facing == "left" and player.magnet_pull) or (player.facing == "right" and not player.magnet_pull) then mt.velocity.x = mt.velocity.x - 1 end
+      if mt.resistance_left then
+         mt.resistance_left = mt.resistance_left - 1
+      end
 
+      if (not mt.resistance_left) or mt.resistance_left == 0 then
+         if (player.facing == "down" and player.magnet_pull) or (player.facing == "up" and not player.magnet_pull) then mt.velocity.y = mt.velocity.y + 1 end
+         if (player.facing == "up" and player.magnet_pull) or (player.facing == "down" and not player.magnet_pull) then mt.velocity.y = mt.velocity.y - 1 end
+         if (player.facing == "right" and player.magnet_pull) or (player.facing == "left" and not player.magnet_pull) then mt.velocity.x = mt.velocity.x + 1 end
+         if (player.facing == "left" and player.magnet_pull) or (player.facing == "right" and not player.magnet_pull) then mt.velocity.x = mt.velocity.x - 1 end
+      end
+
+      if mt.resistance_left and mt.resistance_left == 0 then
+         mt.resistance_left = mt.resistance
+      end
    end
 
    for _,object in ipairs(current_room.objects) do
@@ -319,7 +356,7 @@ function updateRoom()
 
             if vel.x ~= 0 then
                object.x_move_ticks = object.x_move_ticks + 1
-               if object.x_move_ticks >= math.floor(60 / math.abs(vel.x)) then
+               if object.x_move_ticks >= math.floor(59 / math.abs(vel.x)) then
                   object.x_move_ticks = 0
                   
                   -- Try to move
@@ -381,31 +418,31 @@ end
 
 function drawRoom()
 
-   gfx.setBackgroundColor( FLOOR_SAND )
-   gfx.clear()
+   gfx.setColor( FLOOR_SAND )
+   gfx.rectangle( 'fill', 0, 0, current_room.width, current_room.height)
 
    -- Static stuff
    for i=0,current_room.width-1 do
       for j=0,current_room.height-1 do
 
          -- Top level stuff
-         if current_room.grid[i][j][1] == 'miasma' then 
+         if current_room.grid[i][j].miasma then
             gfx.setColor( MIASMA )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
 
          -- Mid level stuff
 
          -- Underneath stuff
-         elseif current_room.grid[i][j][1] == 'wall' then 
+         elseif current_room.grid[i][j].id == 'wall' then 
             gfx.setColor( WALL_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
-         elseif current_room.grid[i][j][1] == 'door' then 
+         elseif current_room.grid[i][j].id == 'door' then 
             gfx.setColor( FLOOR_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
-         elseif current_room.grid[i][j][1] == 'hole' then 
+         elseif current_room.grid[i][j].id == 'hole' then 
             gfx.setColor( BLACK )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
-         elseif current_room.grid[i][j][1] == 'drawing' then 
+         elseif current_room.grid[i][j].id == 'drawing' then 
             gfx.setColor( DRAWING_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
          end
@@ -414,16 +451,53 @@ function drawRoom()
    end
 end
 
+--- Camera
+
+function fitCamera()
+   if current_room.width > 64 then
+      if camera.x < 0 then camera.x = 0 end
+      if camera.x + 64 > current_room.width then camera.x = current_room.width - 64 end
+   end
+   if current_room.height > 64 then
+      if camera.y < 0 then camera.y = 0 end
+      if camera.y + 64 > current_room.height then camera.y = current_room.height - 64 end
+   end
+end
+
+function centerCamera()
+   if current_room.width <= 64 then camera.x = -math.floor((64 - current_room.width) / 2)
+   else camera.x = player.x - 32
+   end
+   if current_room.height <= 64 then camera.y = -math.floor((64 - current_room.height) / 2)
+   else camera.y = player.y - 32
+   end
+
+   fitCamera()
+end
+
+function followCamera()
+   if current_room.width > 64 then
+      if player.x - CAMERA_EDGE < camera.x then camera.x = player.x - CAMERA_EDGE end
+      if player.x + CAMERA_EDGE > camera.x + 64 then camera.x = player.x + CAMERA_EDGE - 64 end
+   end
+   if current_room.height > 64 then
+      if player.y - CAMERA_EDGE < camera.y then camera.y = player.y - CAMERA_EDGE end
+      if player.y + CAMERA_EDGE > camera.y + 64 then camera.y = player.y + CAMERA_EDGE - 64 end
+   end
+
+   fitCamera()
+end
+
 --- Player
 
 function initPlayer()
-   player = { x = 2, y = 31, facing = 'down',
+   player = { x = 10, y = 15, facing = 'down',
                     color = 0, 
                     state = "normal",
                     anim_timer = 0,
                     magnet_pull = false,
                     unlocked = { } }
-   player_start = { 2, 31 }
+   player_start = { x = player.x, y = player.y }
    player.unlocked[0] = true
    player.unlocked[1] = true
    player.unlocked[2] = true
@@ -431,23 +505,6 @@ function initPlayer()
    player.unlocked[4] = true
    player.unlocked[5] = true
    player.unlocked[6] = true
-end
-
-function movePlayer( dx, dy )
-   local new_x = player.x + dx
-   local new_y = player.y + dy
-
-   -- Check collisions
-   local take_back = false
-   if playerStaticCollisions( new_x, new_y ) then take_back = true end
-
-   if not take_back then
-      player.x = new_x
-      player.y = new_y
-      return true
-   else
-      return false
-   end
 end
 
 function movePlayerTo( x, y )
@@ -461,11 +518,18 @@ function movePlayerTo( x, y )
    if not take_back then
       player.x = new_x
       player.y = new_y
+      if player.state == "magnet" then 
+         player.magnet_target = nil
+      end
+      followCamera()
       return true
    else
       return false
    end
+end
 
+function movePlayer( dx, dy )
+   return movePlayerTo( player.x + dx, player.y + dy )
 end
 
 function changeColor( change )
@@ -510,9 +574,8 @@ function getMagnetTarget()
                if not player.magnet_target.velocity then
                   player.magnet_target.velocity = { x=0, y=0 }
                end
-               player.magnet_target.test = "fail"
-               player.magnet_target.x_move_ticks = 0
-               player.magnet_target.y_move_ticks = 0
+               if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
+               if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
                break
             end
          end
@@ -537,9 +600,8 @@ function getMagnetTarget()
                if not player.magnet_target.velocity then
                   player.magnet_target.velocity = { x=0, y=0 }
                end
-               player.magnet_target.test = "fail"
-               player.magnet_target.x_move_ticks = 0
-               player.magnet_target.y_move_ticks = 0
+               if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
+               if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
                break
             end
          end
@@ -552,6 +614,7 @@ function playerActionOn()
    if player.color == 1 then
       player.state = "magnet"
       player.magnet_pull = not player.magnet_pull
+      speed = MAGNET_SPEED
 
       getMagnetTarget()
 
@@ -561,6 +624,7 @@ function playerActionOn()
          player.warppoint = nil
       else
          player.warppoint = { player.x, player.y }
+         player.warpeffect = WARP_EFFECT_DURATION
       end
 
    elseif player.color == 3 then
@@ -578,6 +642,7 @@ function playerActionOff()
    if player.color == 1 then
       player.state = "normal"
       player.magnet_target = nil
+      speed = BASE_SPEED
 
    elseif player.color == 3 then
    elseif player.color == 4 then
@@ -668,8 +733,9 @@ end
 
 function restartRoom()
    loadNewRoom( current_room.name )
-   player.x = player_start[1]
-   player.y = player_start[2]
+   player.x = player_start.x
+   player.y = player_start.y
+   centerCamera()
 end
 
 --- Effects
@@ -682,6 +748,25 @@ function drawEffects()
       gfx.rectangle( 'fill', pw[1]+1, pw[2], 1, 1 )
       gfx.rectangle( 'fill', pw[1]+1, pw[2]+2, 1, 1 )
       gfx.rectangle( 'fill', pw[1]+2, pw[2]+1, 1, 1 )
+
+      if player.warpeffect and player.warpeffect > 0 then
+         local alpha = WARP_EFFECT_ALPHA * player.warpeffect
+         if alpha > 255 then alpha = 255 end
+         gfx.setColor( ORANGE_WARP[1], ORANGE_WARP[2], ORANGE_WARP[3], alpha )
+         gfx.rectangle( 'fill', pw[1]-1, pw[2]-1, 2, 1 )
+         gfx.rectangle( 'fill', pw[1]-1, pw[2], 1, 1 )
+
+         gfx.rectangle( 'fill', pw[1]+2, pw[2]-1, 1, 1 )
+         gfx.rectangle( 'fill', pw[1]+3, pw[2]-1, 1, 2 )
+
+         gfx.rectangle( 'fill', pw[1]-1, pw[2]+2, 1, 1 )
+         gfx.rectangle( 'fill', pw[1]-1, pw[2]+3, 2, 1 )
+
+         gfx.rectangle( 'fill', pw[1]+2, pw[2]+3, 1, 1 )
+         gfx.rectangle( 'fill', pw[1]+3, pw[2]+2, 1, 2 )
+         player.warpeffect = player.warpeffect - 1
+         if player.warpeffect == 0 then player.warpeffect = nil end
+      end
    end
 end
 
@@ -690,27 +775,31 @@ end
 function playerStaticCollisions( new_x, new_y )
    for x=new_x,new_x+2 do
       for y=new_y,new_y+2 do
-         if current_room.grid[x][y][1] == 'wall'
-            or current_room.grid[x][y][1] == 'hole'
+         if current_room.grid[x][y].id == 'wall'
+            or current_room.grid[x][y].id == 'hole'
             or (current_room.grid[x][y].obj and not current_room.grid[x][y].obj.passable)
             then
             return true
          end
 
-         if current_room.grid[x][y][1] == 'miasma' then 
+         if current_room.grid[x][y].miasma then
             -- Dead
             restartRoom()
             return true
          end
 
-         if current_room.grid[x][y][1] == 'door' then 
-            local direction = current_room.grid[x][y][2]
-            loadNewRoom( current_room.grid[x][y][3] )
+         if current_room.grid[x][y].id == 'door' then 
+            local door = current_room.grid[x][y]
+            local direction = door.side
+            loadNewRoom( door.to )
             if direction == 'left' then player.x = current_room.width - 4
             elseif direction == 'right' then player.x = 1
             elseif direction == 'up' then player.y = current_room.height - 4
             elseif direction == 'down' then player.y = 1 end
-            player_start = { player.x, player.y }
+            if door.to_x then player.x = door.to_x end
+            if door.to_y then player.y = door.to_y end
+            player_start = { x = player.x, y = player.y }
+            centerCamera()
             return true
          end
       end
@@ -721,7 +810,7 @@ end
 function playerUpdateCollisions()
    for x=player.x,player.x+2 do
       for y=player.y,player.y+2 do
-         if current_room.grid[x][y][1] == 'miasma' then 
+         if current_room.grid[x][y].miasma then
             -- Dead
             restartRoom()
          end
@@ -731,17 +820,24 @@ end
 
 function objectStaticCollisions( object, new_x, new_y )
    if new_x <= player.x + 2 and new_x + object.width-1 >= player.x
-      and new_y <= player.y + 2 and new_y + object.width-1 >= player.y then
+      and new_y <= player.y + 2 and new_y + object.height-1 >= player.y then
       return true
    end
 
+   for _,obj in ipairs(current_room.objects) do
+      if not obj.passable and obj.id ~= object.id and
+         new_x <= obj.x + obj.width-1 and new_x + object.width-1 >= obj.x
+         and new_y <= obj.y + obj.height-1 and new_y + object.height-1 >= obj.y then
+         return true
+      end
+   end
+
+
    for x=new_x,new_x+object.width-1 do
       for y=new_y,new_y+object.height-1 do
-         if current_room.grid[x][y][1] == 'wall'
-            or current_room.grid[x][y][1] == 'hole'
-            or current_room.grid[x][y][1] == 'door' 
-            or (current_room.grid[x][y].obj and 
-               not current_room.grid[x][y].obj.passable and not current_room.grid[x][y].obj == object)
+         if current_room.grid[x][y].id == 'wall'
+            or current_room.grid[x][y].id == 'hole'
+            or current_room.grid[x][y].id == 'door' 
             then 
             return true
          end
@@ -785,7 +881,8 @@ function love.load()
    love.window.setTitle( 'Low Res Adventure' )
 
    initPlayer()
-   loadNewRoom( "magnetpuzzle1" )
+   loadNewRoom( "passage1" )
+   centerCamera()
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -814,33 +911,33 @@ function love.keyreleased(key)
    if key == 'space' then playerActionOff() end
 end
 
-local moved_last_time = false
+local move_timer = 0
 function love.update(dt)
    local fps = love.timer.getFPS()
    fpsText:set(fps..' fps')
 
-   if player.state == "normal" and not moved_last_time then
+   if move_timer == 0 then
       if love.keyboard.isDown("up") then 
-         movePlayer( 0, -speed ) 
-         player.facing = 'up'
-         moved_last_time = true 
+         movePlayer( 0, -1 ) 
+         if player.state == "normal" then player.facing = 'up' end
+         move_timer = speed 
       end
       if love.keyboard.isDown("down") then 
-         movePlayer( 0, speed ) 
-         player.facing = 'down'
-         moved_last_time = true 
+         movePlayer( 0, 1 ) 
+         if player.state == "normal" then player.facing = 'down' end
+         move_timer = speed 
       end
       if love.keyboard.isDown("left") then 
-         movePlayer( -speed, 0 ) 
-         player.facing = 'left'
-         moved_last_time = true 
+         movePlayer( -1, 0 ) 
+         if player.state == "normal" then player.facing = 'left' end
+         move_timer = speed 
       end
       if love.keyboard.isDown("right") then 
-         movePlayer( speed, 0 ) 
-         player.facing = 'right'
-         moved_last_time = true 
+         movePlayer( 1, 0 ) 
+         if player.state == "normal" then player.facing = 'right' end
+         move_timer = speed
       end
-   else moved_last_time = false end
+   else move_timer = move_timer - 1 end
 
    if current_room.active then
       updateRoom()
@@ -853,13 +950,15 @@ local test_y = 1
 function love.draw()
    gfx.setCanvas( canvas64 )
 
-      gfx.setBackgroundColor( 210, 180, 140 )
+      gfx.setBackgroundColor( BLACK )
       gfx.clear()
 
+      gfx.translate( -camera.x, -camera.y )
       drawRoom()
       drawEffects()
       drawObjects()
       drawPlayer()
+      gfx.translate( camera.x, camera.y )
 
       if love.keyboard.isDown("f") then 
          gfx.setColor( 255, 255, 255, 255 )
@@ -870,10 +969,10 @@ function love.draw()
          nameText:set(current_room.name)
          gfx.draw( nameText, 0, 0 )
       end
-      if player.magnet_target then 
+      if love.keyboard.isDown("m") and player.magnet_target then 
          gfx.setColor( 255, 255, 255, 255 )
          local mt = player.magnet_target
-         magnetText:set(mt.test .. " xt:" .. mt.x_move_ticks .. " vy:" .. mt.velocity.y)
+         magnetText:set("vx:" .. mt.velocity.x .. " vy:" .. mt.velocity.y)
          gfx.draw( magnetText, 0, 0 )
       end
 
