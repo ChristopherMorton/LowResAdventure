@@ -36,6 +36,7 @@ roomDatabase = {
       floor = {
          { style = "points", mark = "drawing", 
             points = { 
+               -- Eyeball ART!
                { x = 11, y = 11 },
                { x = 12, y = 11 },
                { x = 12, y = 12 },
@@ -64,10 +65,28 @@ roomDatabase = {
    passage2 = { width = 100, height = 16,
       doors = {
          { side = "down", start = 9, finish = 14, to = "passage1" },
-         { side = "down", start = 83, finish = 94, to = "home", to_x = 29 }
+         { side = "down", start = 86, finish = 91, to = "blockpuzzle1", to_x = 13 }
       },
       floor = {
       }
+   },
+
+   blockpuzzle1 = { width = 30, height = 40,
+      active = true,
+      doors = {
+         { side = "up", start = 12, finish = 17, to = "passage2", to_x = 87 },
+         { side = "down", start = 12, finish = 17, to = "home", to_x = 30 },
+      },
+      floor = {
+      },
+      objects = {
+         { id = "block", class = "block", color = "black", pushable = true, resistance = 3, x = 6, y = 16, width = 4, height = 4 },
+         { id = "lock", class = "lock", color = "white", locks = 2, x = 11, y = 36, width = 8, height = 3 },
+      },
+      triggers = {
+         { id = "button1", class = "button", target = "lock", color = "black", x = 18, y = 12, width = 6, height = 6 },
+         { id = "button2", class = "button", target = "lock", color = "black", x = 18, y = 24, width = 6, height = 6 },
+      },
    },
 
    magnetpuzzle1 = { width = 64, height = 64,
