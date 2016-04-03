@@ -1,80 +1,40 @@
 roomDatabase = {
 
-   test1 = { width = 64, height = 64, 
-      doors = { 
-         { side = "right", start = 25, finish = 40, to = "test2" } 
-      }
-   },
-
-   test2 = { width = 64, height = 64, 
-      doors = { 
-         { side = "left", start = 25, finish = 40, to = "test1" } 
-      },
-      floor = {
-         { mark = "line", start = { x = 10, y = 10 }, moves = { { dir = "right", dist = 30 }, { dir = "down", dist = 30 }, { dir = "left", dist = 30 } } }
-      }
-   },
-
-
-
-
-   -- Real rooms
-
    home = { width = 64, height = 64,
       doors = {
          { side = "left", start = 26, finish = 37, to = "magnetpuzzle1" },
-         { side = "up", start = 26, finish = 37, to = "passage2", to_x = 87 },
+         { side = "up", start = 26, finish = 37, to = "passage2", to_x = 74 },
          { side = "right", start = 26, finish = 37, to = "miasma1" },
-         { side = "down", start = 26, finish = 37, to = "home" }
-      }
+         { side = "down", start = 26, finish = 37, to = "blockpuzzle1", to_x = 13 }
+      },
+      floor = {
+         { style = "ankh", mark = "drawing", x = 28, y = 27 }
+      },
    },
 
    passage1 = { width = 24, height = 24,
       doors = {
-         { side = "up", start = 9, finish = 14, to = "passage2" }
+         { side = "up", start = 9, finish = 14, to = "passage2", to_x = 13 }
       },
       floor = {
-         { style = "points", mark = "drawing", 
-            points = { 
-               -- Eyeball ART!
-               { x = 11, y = 11 },
-               { x = 12, y = 11 },
-               { x = 12, y = 12 },
-               { x = 11, y = 12 },
-
-               { x = 9, y = 11 },
-               { x = 10, y = 10 },
-               { x = 11, y = 10 },
-               { x = 12, y = 10 },
-               { x = 13, y = 10 },
-               { x = 14, y = 11 },
-
-               { x = 8, y = 12 },
-               { x = 9, y = 13 },
-               { x = 10, y = 14 },
-               { x = 11, y = 14 },
-               { x = 12, y = 14 },
-               { x = 13, y = 14 },
-               { x = 14, y = 13 }, 
-               { x = 15, y = 12 }, 
-            }
-         }
+         { style = "eye", mark = "drawing", x = 8, y = 10 }
       }
    },
 
-   passage2 = { width = 100, height = 16,
+   passage2 = { width = 90, height = 16,
       doors = {
-         { side = "down", start = 9, finish = 14, to = "passage1" },
-         { side = "down", start = 86, finish = 91, to = "blockpuzzle1", to_x = 13 }
+         { side = "down", start = 12, finish = 17, to = "passage1" },
+         { side = "down", start = 73, finish = 78, to = "blockpuzzle1", to_x = 13 }
       },
       floor = {
+         { style = "cat", mark = "drawing", x = 80, y = 6 },
+         { style = "spiral", mark = "drawing", x = 5, y = 5 },
       }
    },
 
    blockpuzzle1 = { width = 30, height = 40,
-      active = true,
       doors = {
-         { side = "up", start = 12, finish = 17, to = "passage2", to_x = 87 },
+         { side = "up", start = 12, finish = 17, to = "passage2", to_x = 74 },
          { side = "down", start = 12, finish = 17, to = "home", to_x = 30 },
       },
       floor = {
@@ -90,7 +50,6 @@ roomDatabase = {
    },
 
    magnetpuzzle1 = { width = 64, height = 64,
-      active = true,
       doors = {
          { side = "left", start = 26, finish = 37, to = "home" },
          { side = "right", start = 26, finish = 37, to = "home" }
@@ -102,12 +61,12 @@ roomDatabase = {
       objects = {
          { id = "b1", class = "block", color = "red", magnetic = true, x = 30, y = 30, width = 4, height = 4 },
          { id = "b2", class = "block", color = "red", magnetic = true, resistance = 2, x = 10, y = 40, width = 6, height = 12 },
-         { id = "b3", class = "block", color = "red", magnetic = true, resistance = 6, x = 40, y = 10, width = 16, height = 24 }
-      }
+         { id = "b3", class = "block", color = "red", magnetic = true, resistance = 6, x = 40, y = 10, width = 16, height = 24 },
+         { id = "b4", class = "block", color = "blue", bombable = true, x = 2, y = 20, width = 4, height = 24 },
+      },
    },
 
    miasma1 = { width = 64, height = 64,
-      active = true,
       regenerate = true,
       doors = {
          { side = "left", start = 26, finish = 37, to = "home" },
