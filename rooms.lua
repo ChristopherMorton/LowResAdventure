@@ -8,7 +8,8 @@ roomDatabase = {
          { side = "down", start = 26, finish = 37, to = "blockpuzzle1", to_x = 13 }
       },
       floor = {
-         { style = "ankh", mark = "drawing", x = 28, y = 27 }
+         { style = "ankh", mark = "drawing", x = 28, y = 27 },
+         { style = "text", text = "Welcome", x = 16, y = 40 }
       },
    },
 
@@ -35,17 +36,41 @@ roomDatabase = {
    blockpuzzle1 = { width = 30, height = 40,
       doors = {
          { side = "up", start = 12, finish = 17, to = "passage2", to_x = 74 },
-         { side = "down", start = 12, finish = 17, to = "home", to_x = 30 },
+         { side = "down", start = 12, finish = 17, to = "blockpuzzle2" },
       },
       floor = {
       },
       objects = {
-         { id = "block", class = "block", color = "black", pushable = true, resistance = 3, x = 6, y = 16, width = 4, height = 4 },
+         { id = "block", class = "block", color = "black", pushable = true, resistance = 2, x = 6, y = 16, width = 4, height = 4 },
          { id = "lock", class = "lock", color = "white", locks = 2, x = 11, y = 36, width = 8, height = 3 },
       },
       triggers = {
          { id = "button1", class = "button", target = "lock", color = "black", x = 18, y = 12, width = 6, height = 6 },
          { id = "button2", class = "button", target = "lock", color = "black", x = 18, y = 24, width = 6, height = 6 },
+      },
+   },
+
+   blockpuzzle2 = { width = 56, height = 31,
+      doors = {
+         { side = "up", start = 12, finish = 17, to = "blockpuzzle1" },
+         { side = "right", start = 13, finish = 18, to = "home", to_y = 30 },
+      },
+      floor = {
+         { style = "image", source = "res/reset_explanation.png", x = 15, y = 12 },
+      },
+      objects = {
+         { id = "block1", class = "block", color = "black", pushable = true, resistance = 2, x = 2, y = 8, width = 5, height = 5 },
+         { id = "block2", class = "block", color = "black", pushable = true, resistance = 2, x = 7, y = 8, width = 5, height = 5 },
+         { id = "block3", class = "block", color = "black", pushable = true, resistance = 2, x = 7, y = 13, width = 5, height = 5 },
+         { id = "block4", class = "block", color = "black", pushable = true, resistance = 2, x = 7, y = 18, width = 5, height = 5 },
+         { id = "block5", class = "block", color = "black", pushable = true, resistance = 2, x = 2, y = 18, width = 5, height = 5 },
+         { id = "lock", class = "lock", color = "white", locks = 4, x = 52, y = 11 , width = 3, height = 10 },
+      },
+      triggers = {
+         { id = "button1", class = "button", target = "lock", color = "black", x = 30, y = 6, width = 7, height = 7 },
+         { id = "button2", class = "button", target = "lock", color = "black", x = 30, y = 18, width = 7, height = 7 },
+         { id = "button3", class = "button", target = "lock", color = "black", x = 42, y = 6, width = 7, height = 7 },
+         { id = "button4", class = "button", target = "lock", color = "black", x = 42, y = 18, width = 7, height = 7 },
       },
    },
 

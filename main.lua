@@ -4,13 +4,9 @@ gfx = love.graphics
 
 --- Data
 
-game_state = "play"
-
-zoom = 10
-speed = 1
-
 -- Declarations
 
+local game_state = "play"
 local player
 local current_room
 local prev_room
@@ -18,6 +14,7 @@ local camera = { x = 0, y = 0 }
 local speed = 1
 local zoom = 10
 local effect_id = 1
+local font
 
 -- Constants
 
@@ -217,7 +214,7 @@ function drawObjects()
          else
             if object.color == "red" then gfx.setColor( RED_MAGNET ) end
             if object.color == "blue" then gfx.setColor( BLUE_BOMB ) end
-            if object.color == "black" then gfx.setColor( LIGHT_GRAY ) end
+            if object.color == "black" then gfx.setColor( DARK_GRAY ) end
 
             gfx.rectangle( "fill", object.x, object.y, object.width, object.height )
 
@@ -291,6 +288,13 @@ function removeLock( lock )
                current_room.grid[x][y].obj = nil
             end
          end
+
+         -- Save completion
+         for _,object in pairs(roomDatabase[current_room.name].objects) do
+            if object.id == lock.id then
+               object.cleared = true
+            end
+         end
       end
       return true
    end
@@ -320,6 +324,7 @@ function generateRoom( input )
                   objects = { },
                   triggers = { },
                   effects = { },
+                  images = { },
                 }
 
    if input.custom_grid then
@@ -376,6 +381,14 @@ function generateRoom( input )
 
       if input.floor then
          for _,geometry in pairs(input.floor) do
+
+            if geometry.style == 'image' then
+               table.insert(room.images, { class="image", image=gfx.newImage( geometry.source ), x=geometry.x, y=geometry.y })
+            end
+
+            if geometry.style == 'text' then
+               table.insert(room.images, { class="text", text=gfx.newText( font, geometry.text ), x=geometry.x, y=geometry.y })
+            end
 
             if geometry.style == 'line' then
                local cur = {}
@@ -520,14 +533,16 @@ function generateRoom( input )
             end
 
             if object.class == "lock" then
-               local obj = shallowcopy( object )
-               room.objects[obj.id] = obj
+               if not object.cleared then
+                  local obj = shallowcopy( object )
+                  room.objects[obj.id] = obj
 
-               for x=obj.x,obj.x+obj.width-1 do
-                  for y=obj.y,obj.y+obj.height-1 do
-                     room.grid[x][y].obj = obj
-                  end
-               end 
+                  for x=obj.x,obj.x+obj.width-1 do
+                     for y=obj.y,obj.y+obj.height-1 do
+                        room.grid[x][y].obj = obj
+                     end
+                  end 
+               end
             end
 
          end
@@ -780,6 +795,16 @@ function drawRoom()
 
    gfx.setColor( FLOOR_SAND )
    gfx.rectangle( 'fill', 0, 0, current_room.width, current_room.height)
+
+   for _,image in pairs(current_room.images) do
+      if image.class == "image" then
+         gfx.setColor( WHITE )
+         gfx.draw( image.image, image.x, image.y )
+      elseif image.class == "text" then
+         gfx.setColor( DRAWING_SAND )
+         gfx.draw( image.text, image.x, image.y )
+      end
+   end
 
    -- Static stuff
    for i=0,current_room.width-1 do
@@ -1358,7 +1383,7 @@ function love.load()
    love.window.setTitle( 'Low Res Adventure' )
 
    initPlayer()
-   loadNewRoom( "magnetpuzzle1" )
+   loadNewRoom( "home" )
    centerCamera()
 end
 
