@@ -35,8 +35,18 @@ WARP_EFFECT_DURATION = 24
 BOMB_TIMER_SEGMENT = 60
 BOMB_KICK_VELOCITY = 15
 
+SWORD_ANIM_TIME = 16
+SWORD_SWING_TIME = 11
+SWORD_LENGTH = 7.9
+
 RUBBLE_DURATION_SEGMENT = 5
 EXPLOSION_DURATION = 15
+
+BLOB_WIDTH = 7
+BLOB_HEIGHT = 7
+BLOB_MAX_VELOCITY = 15
+BLOB_ANIM_TIMER = 18
+BLOB_MOVE_CHANCE = 0.3
 
 -- Colors
 
@@ -59,11 +69,17 @@ YELLOW_TORCH = { 205, 205, 0 }
 GREEN_WHIRLWIND = { 0, 205, 0 }
 BLUE_BOMB = { 50, 50, 255 }
 BLUE_BOMB_EDGE = { 0, 0, 215 }
-VIOLET_SWORD = { 215, 10, 125 }
+VIOLET_SWORD = { 195, 10, 105 }
+VIOLET_SWORD_FILL = { 255, 50, 165 }
 
 -- Images
 
-explosion_img = gfx.newImage( "res/explosion.png" )
+img_explosion = gfx.newImage( "res/explosionred.png" )
+img_explosionblue = gfx.newImage( "res/explosionblue.png" )
+img_blobblack1 = gfx.newImage( "res/blobblack1.png" )
+img_blobblack2 = gfx.newImage( "res/blobblack2.png" )
+img_blobred1 = gfx.newImage( "res/blobred1.png" )
+img_blobred2 = gfx.newImage( "res/blobred2.png" )
 
 --- Utility
 
@@ -111,6 +127,17 @@ function addDirection( thing, dir )
    if dir == "down" then thing.y = thing.y + 1 end
    if dir == "left" then thing.x = thing.x - 1 end
    if dir == "right" then thing.x = thing.x + 1 end
+end
+
+function intersects( thing1, thing2 )
+   if thing1.x <= thing2.x + thing2.width - 1 
+      and thing1.x + thing1.width-1 >= thing2.x
+      and thing1.y <= thing2.y + thing2.height-1 
+      and thing1.y + thing1.height-1 >= thing2.y then
+      return true
+   else
+      return false
+   end
 end
 
 --- Window
@@ -172,7 +199,7 @@ function destroyObject( object )
    end
 
    if object.class == "bomb" then
-      createEffect( "explosion", nil, object.x - 2, object.y - 2 )
+      createEffect( "explosion", "blue", object.x - 2, object.y - 2 )
    end
 
 end
@@ -276,9 +303,24 @@ function addLock( lock )
 end
 
 function removeLock( lock )
-   if lock and lock.locks then lock.locks = lock.locks - 1 end
+   if lock.locks then lock.locks = lock.locks - 1 end
 
-   if lock and lock.locks == 0 then
+   if lock.class == "bombtrap" then
+      for _,object in pairs(current_room.objects) do
+         if object.explodable and intersects( object, lock ) then
+            destroyObject( object )
+         end
+      end
+      for _,enemy in pairs(current_room.enemies) do
+         if enemy.explodable and intersects( enemy, lock ) then
+            destroyEnemy( enemy )
+         end
+      end
+
+      createEffect( "explosion", "black", lock.x, lock.y )
+   end
+
+   if lock.locks == 0 then
       -- Remove the lock
       if lock.class == "lock" then
          current_room.objects[lock.id] = nil
@@ -322,6 +364,7 @@ function generateRoom( input )
    local room = { width = input.width, height = input.height, 
                   regenerate = input.regenerate, 
                   objects = { },
+                  enemies = { },
                   triggers = { },
                   effects = { },
                   images = { },
@@ -417,7 +460,24 @@ function generateRoom( input )
                end
             end
 
-            -- Custom shapes!
+            -- Custom shapes! Scatter these around ;D
+            if geometry.style == "bomb" then
+               room.grid[geometry.x + 0][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
+
+               room.grid[geometry.x + 1][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 1] = { id=geometry.mark }
+            end
+
             if geometry.style == "eye" then
                room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
                room.grid[geometry.x + 4][geometry.y + 1] = { id=geometry.mark }
@@ -456,6 +516,36 @@ function generateRoom( input )
                room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
                room.grid[geometry.x + 4][geometry.y + 4] = { id=geometry.mark }
                room.grid[geometry.x + 5][geometry.y + 4] = { id=geometry.mark }
+            end
+
+            if geometry.style == "deer" then
+               room.grid[geometry.x + 0][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 0] = { id=geometry.mark }
+
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 4] = { id=geometry.mark }
+
+               room.grid[geometry.x + 5][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 9][geometry.y + 3] = { id=geometry.mark }
+
+               room.grid[geometry.x + 5][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 6] = { id=geometry.mark }
+
             end
 
             if geometry.style == "ankh" then
@@ -502,7 +592,163 @@ function generateRoom( input )
                room.grid[geometry.x + 1][geometry.y + 2] = { id=geometry.mark }
                room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
                room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+            end
 
+            if geometry.style == "apple" then
+               room.grid[geometry.x + 2][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 4] = { id=geometry.mark }
+
+               room.grid[geometry.x + 1][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 8] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 9] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 9] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 9] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 8] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 4] = { id=geometry.mark }
+            end
+
+            if geometry.style == "heart" then
+               room.grid[geometry.x + 0][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
+            end
+
+            if geometry.style == "scarab" then
+               room.grid[geometry.x + 3][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 1] = { id=geometry.mark }
+
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 6] = { id=geometry.mark }
+
+               room.grid[geometry.x + 1][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 7] = { id=geometry.mark }
+            end
+
+            if geometry.style == "invader" then
+               room.grid[geometry.x + 0][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 7] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 9][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 9][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 10][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 10][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 10][geometry.y + 6] = { id=geometry.mark }
+
+            end
+
+            if geometry.style == "companion" then
+               room.grid[geometry.x + 0][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 5] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 6] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 5] = { id=geometry.mark }
+
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 4] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 3] = { id=geometry.mark }
             end
 
          end
@@ -517,6 +763,15 @@ function generateRoom( input )
                      room.grid[x][y] = { id="miasma", miasma=true }
                   end
                end
+            end
+             
+            if object.class == "bombtrap" then
+               local obj = shallowcopy( object )
+               obj.locks = 1000
+               obj.passable = true
+               obj.width = 7
+               obj.height = 7
+               room.objects[obj.id] = obj
             end
 
             if object.class == "block" then
@@ -547,6 +802,28 @@ function generateRoom( input )
 
          end
       end
+
+      if input.enemies then
+         for _,enemy in pairs(input.enemies) do
+
+            if enemy.class == "blob" then
+               local e = shallowcopy(enemy)
+               if e.deathtarget then e.deathtarget = room.objects[e.deathtarget] end
+
+               e.width = BLOB_WIDTH
+               e.height = BLOB_HEIGHT
+
+               e.anim_timer = BLOB_ANIM_TIMER
+               e.anim_state = 1
+               e.velocity = { x = 0, y = 0 }
+               e.x_move_ticks = 0
+               e.y_move_ticks = 0
+               e.max_velocity = BLOB_MAX_VELOCITY
+               
+               room.enemies[e.id] = e
+            end
+            
+      end end
 
       if input.triggers then
          for _,trigger in pairs(input.triggers) do
@@ -583,7 +860,11 @@ function updateRoom()
 
                if x >= 0 and x < current_room.width and y >= 0 and y < current_room.height then
                   if current_room.grid[x][y].id ~= 'wall' then 
-                     current_room.grid[x][y].miasma = true
+                     if current_room.grid[x][y].miasma == false then
+                        current_room.grid[x][y].miasma = nil
+                     else
+                        current_room.grid[x][y].miasma = true
+                     end
                   end
                end
             end
@@ -752,6 +1033,87 @@ function updateRoom()
       end
    end
 
+   -- Enemies
+   for _,enemy in pairs(current_room.enemies) do
+       
+      -- AI
+      if enemy.class == "blob" then
+         local dx = player.x - enemy.x
+         local dy = player.y - enemy.y
+         local dsum = math.abs(dx) + math.abs(dy)
+
+         if math.random() < BLOB_MOVE_CHANCE then
+            if math.random(dsum) <= math.abs(dx) then
+               if dx > 0 then enemy.velocity.x = enemy.velocity.x + 1
+               else enemy.velocity.x = enemy.velocity.x - 1 end
+            else
+               if dy > 0 then enemy.velocity.y = enemy.velocity.y + 1
+               else enemy.velocity.y = enemy.velocity.y - 1 end
+            end
+         end
+
+      end
+
+      if enemy.velocity then
+         local vel = enemy.velocity
+
+         if vel.x > MAX_VELOCITY then vel.x = MAX_VELOCITY end
+         if vel.x < -MAX_VELOCITY then vel.x = -MAX_VELOCITY end
+         if vel.y > MAX_VELOCITY then vel.y = MAX_VELOCITY end
+         if vel.y < -MAX_VELOCITY then vel.y = -MAX_VELOCITY end
+
+         if vel.x ~= 0 then
+            enemy.x_move_ticks = enemy.x_move_ticks + 1
+            if enemy.x_move_ticks >= math.floor(59 / math.abs(vel.x)) then
+               enemy.x_move_ticks = 0
+               
+               -- Try to move
+               if (vel.x > 0) then
+                  if (moveObject( enemy, 1, 0 )) then
+                     -- success
+                     vel.x = vel.x - 1
+                  else 
+                     -- collision 
+                     vel.x = 0
+                  end
+               end
+               if (vel.x < 0) then
+                  if (moveObject( enemy, -1, 0 )) then
+                     -- success
+                     vel.x = vel.x + 1
+                  else 
+                     -- collision 
+                     vel.x = 0
+         end end end end
+
+         if vel.y ~= 0 then
+            enemy.y_move_ticks = enemy.y_move_ticks + 1
+            if enemy.y_move_ticks >= math.floor(59 / math.abs(vel.y)) then
+               enemy.y_move_ticks = 0
+               
+               -- Try to move
+               if (vel.y > 0) then
+                  if (moveObject( enemy, 0, 1 )) then
+                     -- success
+                     vel.y = vel.y - 1
+                  else 
+                     -- collision 
+                     vel.y = 0
+                  end
+               end
+               if (vel.y < 0) then
+                  if (moveObject( enemy, 0, -1 )) then
+                     -- success
+                     vel.y = vel.y + 1
+                  else 
+                     -- collision 
+                     vel.y = 0
+         end end end end
+
+      end
+
+   end
+
    -- Triggers
    for _,trigger in pairs(current_room.triggers) do
 
@@ -824,7 +1186,7 @@ function drawRoom()
          elseif current_room.grid[i][j].id == 'door' then 
             gfx.setColor( FLOOR_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
-         elseif current_room.grid[i][j].id == 'hole' then 
+         elseif current_room.grid[i][j].id == 'black' then 
             gfx.setColor( BLACK )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
          elseif current_room.grid[i][j].id == 'drawing' then 
@@ -873,10 +1235,55 @@ function followCamera()
    fitCamera()
 end
 
+--- Enemies
+
+function destroyEnemy( enemy )
+
+   current_room.enemies[enemy.id] = nil
+
+   if enemy.deathtarget then removeLock( enemy.deathtarget ) end
+
+   if enemy.class == "blob" then
+
+      local color = WHITE
+
+      for x=enemy.x,enemy.x+enemy.width-1 do
+         for y=enemy.y,enemy.y+enemy.height-1 do 
+            createEffect( "rubble", color, x, y )
+         end
+      end
+
+   end
+end
+
+
+function drawEnemies()
+   for _,enemy in pairs(current_room.enemies) do
+
+      if enemy.class == 'blob' then
+         enemy.anim_timer = enemy.anim_timer - 1
+         if enemy.anim_timer == 0 then 
+            enemy.anim_timer = BLOB_ANIM_TIMER 
+            if enemy.anim_state == 1 then enemy.anim_state = 2 else enemy.anim_state = 1 end
+         end
+
+         gfx.setColor( WHITE )
+         if enemy.anim_state == 1 then
+            if enemy.color == "black" then gfx.draw( img_blobblack1, enemy.x, enemy.y )
+            elseif enemy.color == "red" then gfx.draw( img_blobred1, enemy.x, enemy.y ) end
+         else
+            if enemy.color == "black" then gfx.draw( img_blobblack2, enemy.x, enemy.y )
+            elseif enemy.color == "red" then gfx.draw( img_blobred2, enemy.x, enemy.y ) end
+         end 
+      end
+
+   end
+end
+
 --- Player
 
 function initPlayer()
-   player = { x = 13, y = 2, facing = 'down',
+   player = { x = 13, y = 2, facing = 'down', width = 3, height = 3,
                     color = 0, 
                     state = "normal",
                     anim_timer = 0,
@@ -1016,6 +1423,35 @@ function getMagnetTarget()
    end
 end
 
+function swingSword()
+   local x_min = player.x - math.ceil(SWORD_LENGTH)
+   local x_max = player.x + math.ceil(SWORD_LENGTH)
+   local y_min = player.y - math.ceil(SWORD_LENGTH)
+   local y_max = player.y + math.ceil(SWORD_LENGTH)
+   if player.facing == "up" then y_max = player.y end
+   if player.facing == "down" then y_min = player.y end
+   if player.facing == "left" then x_max = player.x end
+   if player.facing == "right" then x_min = player.x end
+   if x_min < 0 then x_min = 0 end
+   if y_min < 0 then y_min = 0 end
+   if x_max >= current_room.width then x_max = current_room.width-1 end
+   if y_max >= current_room.height then y_max = current_room.height-1 end
+
+   local r2 = SWORD_LENGTH * SWORD_LENGTH
+   for x=x_min,x_max do
+      for y=y_min,y_max do
+         local dx = x - player.x
+         local dy = y - player.y
+         local dist = (dx * dx) + (dy * dy)
+         if dist <= r2 then
+            current_room.grid[x][y].miasma = false
+            -- TODO Push back sword-able things
+
+         end
+      end
+   end
+end
+
 function playerActionOn()
    player.anim_timer = 0
    if player.color == 1 then
@@ -1061,6 +1497,8 @@ function playerActionOn()
       end
    elseif player.color == 6 then
       -- Sword attack
+      player.state = "sword"
+      player.sword_anim = SWORD_ANIM_TIME
    end
 end
 
@@ -1069,13 +1507,7 @@ function playerActionOff()
       player.state = "normal"
       player.magnet_target = nil
       speed = BASE_SPEED
-
-   elseif player.color == 3 then
-   elseif player.color == 4 then
-   elseif player.color == 5 then
-   elseif player.color == 6 then
    end
-
 end
 
 function drawPlayer()
@@ -1084,6 +1516,26 @@ function drawPlayer()
 
    gfx.setColor( BLACK )
    gfx.rectangle( 'fill', -1.5, -1.5, 3, 3 )
+
+   if player.sword_anim then
+      if player.sword_anim > SWORD_SWING_TIME then
+         gfx.setColor( VIOLET_SWORD )
+         gfx.rectangle( 'fill', -SWORD_LENGTH, -0.5, SWORD_LENGTH, 1 )
+      elseif player.sword_anim == SWORD_SWING_TIME then
+         gfx.setColor( VIOLET_SWORD_FILL )
+         gfx.arc( 'fill', 0, 0, SWORD_LENGTH, -(math.pi / 2) - 0.1, 0, 15 )
+         gfx.setColor( VIOLET_SWORD )
+         gfx.rectangle( 'fill', -0.5, -SWORD_LENGTH, 1, SWORD_LENGTH )
+         
+      else
+         local a = 255 - ((player.sword_anim / SWORD_SWING_TIME) * 300)
+         if a > 255 then a = 255 end
+         gfx.setColor( VIOLET_SWORD_FILL[1], VIOLET_SWORD_FILL[2], VIOLET_SWORD_FILL[3], a )
+         gfx.arc( 'fill', 0, 0, SWORD_LENGTH, -math.pi - 0.1, 0, 15 )
+         gfx.setColor( VIOLET_SWORD )
+         gfx.rectangle( 'fill', 0, -0.5, SWORD_LENGTH, 1 )
+      end
+   end
 
    if player.color == 1 then
       gfx.setColor( RED_MAGNET )
@@ -1115,7 +1567,9 @@ function drawPlayer()
    end
    if player.color == 6 then
       gfx.setColor( VIOLET_SWORD )
-      gfx.rectangle( 'fill', -0.5, -1.5, 1, 2 )
+      gfx.rectangle( 'fill', -1.5, -1.5, 3, 1 )
+      gfx.rectangle( 'fill', -1.5, -0.5, 1, 1 )
+      gfx.rectangle( 'fill', 0.5, -0.5, 1, 1 )
    end
 
    -- Effects
@@ -1153,6 +1607,7 @@ function drawPlayer()
 
    end
 
+
    deTranslateRotate( player.x + 1.5, player.y + 1.5, player.facing ) 
 end
 
@@ -1173,7 +1628,7 @@ function createEffect( class, color, x, y )
    end
 
    if class == "explosion" then
-      current_room.effects[effect_id] = { id=effect_id, class="explosion", timer = EXPLOSION_DURATION, x=x, y=y }
+      current_room.effects[effect_id] = { id=effect_id, class="explosion", color=color, timer = EXPLOSION_DURATION, x=x, y=y }
    end
 
    effect_id = effect_id + 1
@@ -1221,7 +1676,12 @@ function drawEffects()
          if effect.timer == 0 then expired[effect.id] = true end
 
          local a = math.floor((effect.timer * 255) / (RUBBLE_DURATION_SEGMENT * 3))
-         if effect.color == "blue" then gfx.setColor( BLUE_BOMB[1], BLUE_BOMB[2], BLUE_BOMB[3], a ) end
+
+         if effect.color == "blue" then 
+            gfx.setColor( BLUE_BOMB[1], BLUE_BOMB[2], BLUE_BOMB[3], a ) 
+         else
+            gfx.setColor( effect.color[1], effect.color[2], effect.color[3], a )
+         end
          gfx.rectangle( 'fill', effect.x, effect.y, 1, 1 )
       end
 
@@ -1231,7 +1691,11 @@ function drawEffects()
 
          local a = math.floor((effect.timer * 255) / (EXPLOSION_DURATION))
          gfx.setColor( 255, 255, 255, a )
-         gfx.draw( explosion_img, effect.x, effect.y )
+         if effect.color == "blue" then 
+            gfx.draw( img_explosion, effect.x, effect.y )
+         else
+            gfx.draw( img_explosion, effect.x, effect.y )
+         end
 
       end
 
@@ -1244,6 +1708,16 @@ end
 --- Collisions and Interactions
 
 function playerStaticCollisions( new_x, new_y, direction )
+
+   for _,enemy in pairs(current_room.enemies) do
+      if new_x <= enemy.x + enemy.width-1 and new_x + 2 >= enemy.x
+         and new_y <= enemy.y + enemy.height-1 and new_y + 2 >= enemy.y then
+         -- Dead
+         restartRoom()
+         return true
+      end
+   end
+
    local pushable = nil
 
    for x=new_x,new_x+2 do
@@ -1258,7 +1732,7 @@ function playerStaticCollisions( new_x, new_y, direction )
          end
 
          if spot.id == 'wall'
-            or spot.id == 'hole'
+            or spot.id == 'black'
             or (spot.obj and not spot.obj.passable and not spot.obj.pushable)
             then
             return true
@@ -1327,6 +1801,14 @@ function objectStaticCollisions( object, new_x, new_y )
       return true
    end
 
+   for _,enemy in pairs(current_room.enemies) do
+      if not enemy.passable and enemy.id ~= object.id and
+         new_x <= enemy.x + enemy.width-1 and new_x + object.width-1 >= enemy.x
+         and new_y <= enemy.y + enemy.height-1 and new_y + object.height-1 >= enemy.y then
+         return true
+      end
+   end
+
    for _,obj in pairs(current_room.objects) do
       if not obj.passable and obj.id ~= object.id and
          new_x <= obj.x + obj.width-1 and new_x + object.width-1 >= obj.x
@@ -1339,7 +1821,6 @@ function objectStaticCollisions( object, new_x, new_y )
    for x=new_x,new_x+object.width-1 do
       for y=new_y,new_y+object.height-1 do
          if current_room.grid[x][y].id == 'wall'
-            or current_room.grid[x][y].id == 'hole'
             or current_room.grid[x][y].id == 'door' 
             then 
             return true
@@ -1383,7 +1864,7 @@ function love.load()
    love.window.setTitle( 'Low Res Adventure' )
 
    initPlayer()
-   loadNewRoom( "home" )
+   loadNewRoom( "enemyroom1" )
    centerCamera()
 end
 
@@ -1418,7 +1899,17 @@ function love.update(dt)
    local fps = love.timer.getFPS()
    fpsText:set(fps..' fps')
 
-   if move_timer == 0 then
+   if player.state == "sword" then
+      player.sword_anim = player.sword_anim - 1
+
+      if player.sword_anim == SWORD_SWING_TIME then
+         swingSword()
+      elseif player.sword_anim == 0 then 
+         player.sword_anim = nil
+         player.state = "normal"
+      end
+
+   elseif move_timer == 0 then
       if love.keyboard.isDown("up") then 
          movePlayer( "up" )
          if player.state == "normal" then player.facing = 'up' end
@@ -1458,6 +1949,7 @@ function love.draw()
       drawTriggers()
       drawEffects()
       drawObjects()
+      drawEnemies()
       drawPlayer()
       gfx.translate( camera.x, camera.y )
 

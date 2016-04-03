@@ -29,6 +29,7 @@ roomDatabase = {
       },
       floor = {
          { style = "cat", mark = "drawing", x = 80, y = 6 },
+         { style = "deer", mark = "drawing", x = 40, y = 5 },
          { style = "spiral", mark = "drawing", x = 5, y = 5 },
       }
    },
@@ -53,7 +54,7 @@ roomDatabase = {
    blockpuzzle2 = { width = 56, height = 31,
       doors = {
          { side = "up", start = 12, finish = 17, to = "blockpuzzle1" },
-         { side = "right", start = 13, finish = 18, to = "home", to_y = 30 },
+         { side = "right", start = 13, finish = 18, to = "enemyroom1" },
       },
       floor = {
          { style = "image", source = "res/reset_explanation.png", x = 15, y = 12 },
@@ -74,6 +75,28 @@ roomDatabase = {
       },
    },
 
+   enemyroom1 = { width = 45, height = 40,
+      doors = {
+         { side = "left", start = 13, finish = 18, to = "blockpuzzle2" },
+         { side = "right", start = 17, finish = 22, to = "home", to_y = 30 },
+      },
+      floor = {
+         { style = "bomb", mark="drawing", x = 23, y = 18 },
+      },
+      objects = {
+         { id = "lock", class = "lock", color = "white", locks = 2, x = 41, y = 15 , width = 3, height = 10 },
+         { id = "bombtrap", class = "bombtrap", x = 22, y = 17 },
+      },
+      enemies = {
+         { id = "blob1", class = "blob", color = "black", explodable = true, deathtarget = "lock", x = 12, y = 8 },
+         { id = "blob2", class = "blob", color = "black", explodable = true, deathtarget = "lock", x = 24, y = 31 },
+      },
+      triggers = {
+         { id = "button", class = "button", target = "bombtrap", color = "black", x = 32, y = 18, width = 5, height = 5 },
+      }
+
+   },
+
    magnetpuzzle1 = { width = 64, height = 64,
       doors = {
          { side = "left", start = 26, finish = 37, to = "home" },
@@ -81,6 +104,10 @@ roomDatabase = {
       },
       
       floor = {
+         { style = "companion", mark = "drawing", x = 4, y = 4 },
+         { style = "apple", mark = "drawing", x = 48, y = 48 },
+         { style = "scarab", mark = "drawing", x = 4, y = 48 },
+         { style = "invader", mark = "drawing", x = 48, y = 4 },
       },
 
       objects = {
@@ -98,7 +125,7 @@ roomDatabase = {
          { side = "down", start = 26, finish = 37, to = "home" }
       },
       floor = {
-         { style = "line", mark = "hole", 
+         { style = "line", mark = "black", 
             start = { x = 2, y = 38 }, 
             moves = { 
                { dir = "right", dist = 11 }, 
@@ -108,7 +135,7 @@ roomDatabase = {
                { dir = "left", dist = 25 },
                { dir = "down", dist = 11 } } },
          --[[
-         { style = "line", mark = "hole", 
+         { style = "line", mark = "black", 
             start = { x = 2, y = 39 }, 
             moves = { 
                { dir = "right", dist = 12 }, 
