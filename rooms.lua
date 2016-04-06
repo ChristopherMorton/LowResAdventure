@@ -45,8 +45,8 @@ roomDatabase = {
          { id = "lock", class = "lock", locks = 2, x = 11, y = 36, width = 8, height = 3 },
       },
       triggers = {
-         { id = "button1", class = "button", targets = { "lock" }, color = "black", x = 18, y = 12, width = 6, height = 6 },
-         { id = "button2", class = "button", targets = { "lock" }, color = "black", x = 18, y = 24, width = 6, height = 6 },
+         { id = "button1", class = "button", targets = { "lock" }, x = 18, y = 12, width = 6, height = 6 },
+         { id = "button2", class = "button", targets = { "lock" }, x = 18, y = 24, width = 6, height = 6 },
       },
    },
 
@@ -67,10 +67,10 @@ roomDatabase = {
          { id = "lock", class = "lock", locks = 4, x = 52, y = 11 , width = 3, height = 10 },
       },
       triggers = {
-         { id = "button1", class = "button", targets = { "lock" }, color = "black", x = 30, y = 6, width = 7, height = 7 },
-         { id = "button2", class = "button", targets = { "lock" }, color = "black", x = 30, y = 18, width = 7, height = 7 },
-         { id = "button3", class = "button", targets = { "lock" }, color = "black", x = 42, y = 6, width = 7, height = 7 },
-         { id = "button4", class = "button", targets = { "lock" }, color = "black", x = 42, y = 18, width = 7, height = 7 },
+         { id = "button1", class = "button", targets = { "lock" }, x = 30, y = 6, width = 7, height = 7 },
+         { id = "button2", class = "button", targets = { "lock" }, x = 30, y = 18, width = 7, height = 7 },
+         { id = "button3", class = "button", targets = { "lock" }, x = 42, y = 6, width = 7, height = 7 },
+         { id = "button4", class = "button", targets = { "lock" }, x = 42, y = 18, width = 7, height = 7 },
       },
    },
 
@@ -91,7 +91,7 @@ roomDatabase = {
          { id = "blob2", class = "blob", color = "black", explodable = true, targets = { "lock" }, x = 24, y = 31 },
       },
       triggers = {
-         { id = "button", class = "button", targets = { "bombtrap" }, color = "black", x = 32, y = 18, width = 5, height = 5 },
+         { id = "button", class = "button", targets = { "bombtrap" }, x = 32, y = 18, width = 5, height = 5 },
       }
 
    },
@@ -108,7 +108,7 @@ roomDatabase = {
          { side = "left", start = 26, finish = 37, to = "menagerie", to_y = 12 },
          { side = "up", start = 26, finish = 37, to = "magnetpassage1", to_x = 4 },
          { side = "right", start = 26, finish = 37, to = "miasma1" },
-         { side = "down", start = 26, finish = 37, to = "darkpassage1", to_x = 4 },
+         { side = "down", start = 26, finish = 37, to = "darkpassage1", to_x = 9 },
          { side = "stairs", dir = "up", x = 28, y = 18, to = "passage3", to_x = 12, to_y = 6 },
       },
       floor = {
@@ -139,11 +139,13 @@ roomDatabase = {
          { style = "rectangle", mark = "wall", x = 26, y = 24, width = 2, height = 26 },
          { style = "rectangle", mark = "wall", x = 86, y = 24, width = 2, height = 26 },
          -- Cage 2
-         { style = "rectangle", mark = "wall", x = 12, y = 58, width = 2, height = 26 },
-         { style = "rectangle", mark = "wall", x = 72, y = 58, width = 2, height = 26 },
+         { style = "rectangle", mark = "wall", x = 9, y = 58, width = 2, height = 26 },
+         { style = "rectangle", mark = "wall", x = 69, y = 58, width = 2, height = 26 },
          -- Cage 3
-         { style = "rectangle", mark = "wall", x = 20, y = 92, width = 2, height = 26 },
-         { style = "rectangle", mark = "wall", x = 80, y = 92, width = 2, height = 26 },
+         { style = "rectangle", mark = "wall", x = 19, y = 92, width = 2, height = 26 },
+         { style = "rectangle", mark = "wall", x = 79, y = 92, width = 2, height = 26 },
+         -- Spikeblock
+         { style = "rectangle", mark = "wall", x = 84, y = 69, width = 5, height = 5 },
       },
       objects = {
          { id = "redblock", class = "block", color = "red", magnetic = true, x = 10, y = 2, width = 4, height = 18 },
@@ -151,11 +153,17 @@ roomDatabase = {
          { id = "cagelock1", class = "lock", locks = 1, x = 28, y = 24 , width = 58, height = 3 },
          { id = "cagelock2", class = "lock", locks = 1, x = 28, y = 47 , width = 58, height = 3 },
          -- Cage 2
-         { id = "cagelock3", class = "lock", locks = 1, x = 14, y = 58 , width = 58, height = 3 },
-         { id = "cagelock4", class = "lock", locks = 1, x = 14, y = 81 , width = 58, height = 3 },
+         { id = "cagelock3", class = "lock", locks = 1, x = 11, y = 58 , width = 58, height = 3 },
+         { id = "cagelock4", class = "lock", locks = 1, x = 11, y = 81 , width = 58, height = 3 },
          -- Cage 3
-         { id = "cagelock5", class = "lock", locks = 1, x = 22, y = 92 , width = 58, height = 3 },
-         { id = "cagelock6", class = "lock", locks = 1, x = 22, y = 115 , width = 58, height = 3 },
+         { id = "cagelock5", class = "lock", locks = 1, x = 21, y = 92 , width = 58, height = 3 },
+         { id = "cagelock6", class = "lock", locks = 1, x = 21, y = 115 , width = 58, height = 3 },
+         -- Spikeblock
+         { id = "spikes1", class = "spikes", facing = "up", x = 84, y = 65, width = 5, height = 4 },
+         { id = "spikes2", class = "spikes", facing = "left", x = 80, y = 69, width = 4, height = 5 },
+         { id = "spikes3", class = "spikes", facing = "down", x = 84, y = 74, width = 5, height = 4 },
+         { id = "spikes4", class = "spikes", facing = "right", x = 89, y = 69, width = 4, height = 5 },
+
 
          { id = "lock7", class = "lock", locks = 1, x = 2, y = 127 , width = 10, height = 3 },
 
@@ -164,12 +172,12 @@ roomDatabase = {
          { id = "hiddenlock3", class = "hiddenlock", locks = 1, x = 85, y = 140, width = 16, height = 3 }
       },
       enemies = {
-         { id = "violetblob1", class = "blob", color = "violet", swordable = true, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 30, y = 4 },
-         { id = "blueblob1", class = "blob", color = "blue", bombable = true, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 40, y = 4 },
-         { id = "redblob1", class = "blob", color = "red", magnetic = true, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 50, y = 4 },
+         { id = "violetblob1", class = "blob", color = "violet", swordable = true, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 30, y = 27 },
+         { id = "blueblob1", class = "blob", color = "blue", bombable = true, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 40, y = 27 },
+         { id = "redblob1", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 50, y = 27 },
       },
       triggers = {
-         { id = "unlock", class = "button", targets = { "cagelock1", "cagelock2", "cagelock3", "cagelock4", "cagelock5", "cagelock6", "lock7", "hiddenlock1", "hiddenlock2", "hiddenlock3" }, color = "black", x = 68, y = 132, width = 8, height = 8 },
+         { id = "unlock", class = "button", targets = { "cagelock1", "cagelock2", "cagelock3", "cagelock4", "cagelock5", "cagelock6", "lock7", "hiddenlock1", "hiddenlock2", "hiddenlock3" }, x = 68, y = 132, width = 8, height = 8 },
 
       },
 
@@ -273,10 +281,10 @@ roomDatabase = {
       },
       triggers = {
          { id = "startfight", class = "area", targets = { "boss1" }, x = 0, y = 0, width = 80, height = 64 },
-         { id = "button1", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, color = "black", x = 8, y = 8, width = 6, height = 6 },
-         { id = "button2", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, color = "black", x = 86, y = 8, width = 6, height = 6 },
-         { id = "button3", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, color = "black", x = 8, y = 50, width = 6, height = 6 },
-         { id = "button4", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, color = "black", x = 86, y = 50, width = 6, height = 6 },
+         { id = "button1", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, x = 8, y = 8, width = 6, height = 6 },
+         { id = "button2", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, x = 86, y = 8, width = 6, height = 6 },
+         { id = "button3", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, x = 8, y = 50, width = 6, height = 6 },
+         { id = "button4", class = "button", targets = { "bombtrap1", "bombtrap2", "bombtrap3", "bombtrap4" }, x = 86, y = 50, width = 6, height = 6 },
 
       },
    },
@@ -306,31 +314,55 @@ roomDatabase = {
       }
    },
 
-   magnetpuzzle1 = { width = 64, height = 64,
+   magnetpuzzle1 = { width = 80, height = 80,
       doors = {
-         { side = "left", closed_on = 1, start = 26, finish = 37, to = "magnetthrone" },
-         { side = "right", start = 26, finish = 37, to = "menagerie", to_y = 12 }
+         { side = "left", closed_on = 1, start = 64, finish = 75, to = "magnetthrone" },
+         { side = "right", start = 4, finish = 15, to = "menagerie", to_y = 12 }
       },
       
       floor = {
-         { style = "companion", mark = "drawing", x = 4, y = 4 },
-         { style = "apple", mark = "drawing", x = 48, y = 48 },
-         { style = "scarab", mark = "drawing", x = 4, y = 48 },
-         { style = "invader", mark = "drawing", x = 48, y = 4 },
+         { style = "rectangle", mark = "wall", x = 2, y = 48, width = 60, height = 14 },
+         { style = "rectangle", mark = "wall", x = 18, y = 18, width = 60, height = 14 },
+         { style = "scarab", mark = "drawing", x = 8, y = 51 },
+         { style = "scarab", mark = "drawing", x = 28, y = 51 },
+         { style = "scarab", mark = "drawing", x = 48, y = 51 },
+         { style = "invader", mark = "drawing", x = 24, y = 21 },
+         { style = "invader", mark = "drawing", x = 44, y = 21 },
+         { style = "invader", mark = "drawing", x = 64, y = 21 },
       },
 
       objects = {
-         { id = "b1", class = "block", color = "red", magnetic = true, x = 30, y = 30, width = 4, height = 4 },
-         { id = "b2", class = "block", color = "multicolor", color1 = "red", color2 = "blue", magnetic = true, resistance = 2, bombable = true, x = 10, y = 40, width = 6, height = 12 },
-         { id = "b3", class = "block", color = "red", magnetic = true, resistance = 6, x = 40, y = 10, width = 16, height = 24 },
+         { id = "lock", class = "lock", locks = 5, x = 55, y = 2, width = 3, height = 16 },
+         { id = "spikes", class = "spikes", facing = "right", x = 2, y = 3, width = 4, height = 46 },
+         { id = "b1", class="block", color="red", magnetic=true, x=30, y=32, width=4, height=4 },
+         { id = "b2", class="block", color="red", magnetic=true, x=34, y=32, width=4, height=4 },
+         { id = "b3", class="block", color="red", magnetic=true, x=38, y=32, width=4, height=4 },
+         { id = "b5", class="block", color="red", magnetic=true, x=30, y=36, width=4, height=4 },
+         { id = "b6", class="block", color="red", magnetic=true, x=34, y=36, width=4, height=4 },
+         { id = "b7", class="block", color="red", magnetic=true, x=38, y=36, width=4, height=4 },
+         { id = "b9", class="block", color="red", magnetic=true, x=30, y=40, width=4, height=4 },
+         { id = "b10", class="block", color="red", magnetic=true, x=34, y=40, width=4, height=4 },
+         { id = "b11", class="block", color="red", magnetic=true, x=38, y=40, width=4, height=4 },
+         { id = "b13", class="block", color="red", magnetic=true, x=30, y=44, width=4, height=4 },
+         { id = "b14", class="block", color="red", magnetic=true, x=34, y=44, width=4, height=4 },
+         { id = "b15", class="block", color="red", magnetic=true, x=38, y=44, width=4, height=4 },
       },
+
+      enemies = {
+         { id = "blob0", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "lock" }, x = 33, y = 65 },
+         { id = "blob1", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "lock" }, x = 68, y = 70 },
+         { id = "blob2", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "lock" }, x = 70, y = 62 },
+         { id = "blob3", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "lock" }, x = 35, y = 4 },
+         { id = "blob4", class = "blob", color = "red", magnetic = true, resistance = 2, targets = { "lock" }, x = 24, y = 6 },
+      },
+
    },
 
    -- Up
 
    magnetpassage1 = { width = 12, height = 40,
       doors = {
-         { side = "up", start = 3, finish = 8, to = "magnetpuzzle2", to_x = 9 },
+         { side = "up", start = 3, finish = 8, to = "magnetpuzzle2", to_x = 18 },
          { side = "down", start = 3, finish = 8, to = "home", to_x = 30 }
       },
       floor = {
@@ -344,6 +376,52 @@ roomDatabase = {
          { id = "m4", class = "block", color = "red", magnetic = true, x = 6, y = 20, width = 4, height = 4 },
 
       }
+   },
+
+   magnetpuzzle2 = { width = 44, height = 64,
+      doors = {
+         { side = "up", start = 17, finish = 26, to = "home", to_x = 30 },
+         { side = "down", start = 19, finish = 24, to = "magnetpassage1", to_x = 4 },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 2, y = 2, width = 14, height = 12 },
+         { style = "rectangle", mark = "wall", x = 28, y = 2, width = 14, height = 12 },
+         { style = "rectangle", mark = "wall", x = 2, y = 50, width = 14, height = 12 },
+         { style = "rectangle", mark = "wall", x = 28, y = 50, width = 14, height = 12 },
+
+         { style = "rectangle", mark = "wall", x = 2, y = 24, width = 12, height = 3 },
+         { style = "rectangle", mark = "wall", x = 30, y = 24, width = 12, height = 3 },
+         { style = "rectangle", mark = "wall", x = 2, y = 37, width = 12, height = 3 },
+         { style = "rectangle", mark = "wall", x = 30, y = 37, width = 12, height = 3 },
+
+         { style = "rectangle", mark = "black", x = 0, y = 0, width = 14, height = 12 },
+         { style = "rectangle", mark = "black", x = 30, y = 0, width = 14, height = 12 },
+         { style = "rectangle", mark = "black", x = 0, y = 52, width = 14, height = 12 },
+         { style = "rectangle", mark = "black", x = 30, y = 52, width = 14, height = 12 },
+
+         { style = "magnet", mark = "drawing", x = 18, y = 17 },
+         { style = "chain", mark = "drawing", x = 16, y = 41 },
+         { style = "chain", mark = "drawing", x = 18, y = 45 },
+      },
+      objects = {
+         { id = "lock", class = "lock", locks = 5, x = 16, y = 11, width = 12, height = 3 },
+         { id = "c1", class = "chain", link = "m1", length = 30, x = 1, y = 18 },
+         { id = "c2", class = "chain", link = "m2", length = 30, x = 1, y = 45 },
+         { id = "c3", class = "chain", link = "m3", length = 30, x = 42, y = 18 },
+         { id = "c4", class = "chain", link = "m4", length = 30, x = 42, y = 45 },
+         { id = "m1", class = "block", color = "red", magnetic = true, resistance = 2, x = 11, y = 18, width = 5, height = 5 },
+         { id = "m2", class = "block", color = "red", magnetic = true, resistance = 2, x = 11, y = 41, width = 5, height = 5 },
+         { id = "m3", class = "block", color = "red", magnetic = true, resistance = 2, x = 28, y = 18, width = 5, height = 5 },
+         { id = "m4", class = "block", color = "red", magnetic = true, resistance = 2, x = 28, y = 41, width = 5, height = 5 },
+      },
+      triggers = {
+         { id = "b1", class = "button", targets = { "lock" }, x = 3, y = 29, width = 6, height = 6 },
+         { id = "b2", class = "button", targets = { "lock" }, x = 11, y = 29, width = 6, height = 6 },
+         { id = "b3", class = "button", targets = { "lock" }, x = 19, y = 29, width = 6, height = 6 },
+         { id = "b4", class = "button", targets = { "lock" }, x = 27, y = 29, width = 6, height = 6 },
+         { id = "b5", class = "button", targets = { "lock" }, x = 35, y = 29, width = 6, height = 6 },
+
+      },
    },
 
    magnetpuzzle3 = { width = 64, height = 48,
@@ -398,20 +476,48 @@ roomDatabase = {
 
    -- Down
 
-   darkpassage1 = { width = 12, height = 30,
-      darkness = 180,
+   darkpassage1 = { width = 23, height = 34,
+      darkness = 140,
       doors = {
-         { side = "up", start = 3, finish = 8, to = "home", to_x = 30 },
-         { side = "down", start = 3, finish = 8, to = "darkroom1", to_x = 9 }
+         { side = "up", start = 7, finish = 14, to = "home", to_x = 30 },
+         { side = "stairs", dir = "down", x = 8, y = 19, to = "darkpassage2", to_x = 5, to_y = 5 },
       },
       floor = {
+         { style = "rectangle", mark = "wall", x = 2, y = 2, width = 5, height = 11 },
+         { style = "rectangle", mark = "wall", x = 16, y = 2, width = 5, height = 11 },
+         { style = "rectangle", mark = "black", x = 0, y = 0, width = 5, height = 11 },
+         { style = "rectangle", mark = "black", x = 18, y = 0, width = 5, height = 11 },
+      },
+      objects = {
+         { id = "torch1", class = "torch", on=true, to_timeout = 60, x = 2, y = 13, power = 12},
+         { id = "torch2", class = "torch", on=true, to_timeout = 300, x = 16, y = 13, power = 12},
+         { id = "torch3", class = "torch", on=true, to_timeout = 180, x = 2, y = 27, power = 12},
+         { id = "torch4", class = "torch", on=true, to_timeout = 100, x = 16, y = 27, power = 12},
+      }
+   },
+
+   darkpassage2 = { width = 18, height = 40,
+      darkness = 210,
+      doors = {
+         { side = "stairs", dir = "up", x = 3, y = 3, to = "darkpassage1", to_x = 10, to_y = 21 },
+         { side = "down", start = 3, finish = 9, to = "darkroom1", to_x = 9 },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 11, y = 2, width = 5, height = 36 },
+         { style = "rectangle", mark = "black", x = 13, y = 0, width = 5, height = 9 },
+      },
+      objects = {
+         { id = "torch1", class = "torch", on=true, to_timeout = 30, x = 11, y = 11, power = 12},
+         { id = "torch2", class = "torch", on=true, to_timeout = 55, x = 11, y = 18, power = 12},
+         { id = "torch3", class = "torch", on=true, to_timeout = 80, x = 11, y = 25, power = 12},
+         { id = "torch4", class = "torch", on=true, to_timeout = 105, x = 11, y = 32, power = 12},
       }
    },
 
    darkroom1 = { width = 75, height = 75,
       darkness = 245,
       doors = {
-         { side = "up", start = 8, finish = 13, to = "darkpassage1", to_x = 4 },
+         { side = "up", start = 8, finish = 13, to = "darkpassage2", to_x = 4 },
          { side = "down", start = 58, finish = 69, to = "home", to_x = 30 },
       },
       floor = {
@@ -535,7 +641,7 @@ roomDatabase = {
          { id = "doorlock", class = "lock", locks = 1, x = 1, y = 23, width = 3, height = 12 },
       },
       triggers = {
-         { id = "button", class = "button", targets = { "toplock", "botlock", "doorlock" }, color = "black", x = 57, y = 17, width = 5, height = 5 },
+         { id = "button", class = "button", targets = { "toplock", "botlock", "doorlock" }, x = 57, y = 17, width = 5, height = 5 },
       },
    },
 
@@ -576,7 +682,7 @@ roomDatabase = {
          { style = "sword", mark = "drawing", x = 6, y = 13 },
          { style = "sword", mark = "drawing", x = 49, y = 13 },
          { style = "miasmamark", mark = "drawing", x = 56, y = 30 },
-         { style = "image", source = "res/bomb_explanation.png", x = 9, y = 45 },
+         { style = "image", source = "res/sword_explanation.png", x = 9, y = 45 },
          { style = "rectangle", mark = "wall", x = 50, y = 24, width = 12, height = 2 },
          { style = "rectangle", mark = "wall", x = 50, y = 24, width = 2, height = 17 },
          { style = "rectangle", mark = "wall", x = 2, y = 24, width = 12, height = 2 },
@@ -597,7 +703,7 @@ roomDatabase = {
          { id = "altartorch2", class = "torch", on=true, x = 36, y = 35, power = 20 },
       },
       triggers = {
-         { id = "button1", class = "button", targets = { "lock" }, color = "black", x = 2, y = 28, width = 6, height = 8 },
+         { id = "button1", class = "button", targets = { "lock" }, x = 2, y = 28, width = 6, height = 8 },
       },
    },
 }

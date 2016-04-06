@@ -21,7 +21,7 @@ local font
 
 -- Commented are at 30 fps
 
-CAMERA_EDGE = 20
+CAMERA_EDGE = 24
 
 MIASMA_SPREAD_CHANCE = 0.1 --0.2
 
@@ -111,6 +111,10 @@ img_explosion = gfx.newImage( "res/explosionred.png" )
 img_explosionblue = gfx.newImage( "res/explosionblue.png" )
 img_wind = gfx.newImage( "res/thewind.png" )
 img_wind_turn = gfx.newImage( "res/thewindturns.png" )
+img_spikes = { up = gfx.newImage( "res/spikeup.png" ),
+               right = gfx.newImage( "res/spikeright.png" ),
+               down = gfx.newImage( "res/spikedown.png" ),
+               left = gfx.newImage( "res/spikeleft.png" ), }
 
 img_blobblack1 = gfx.newImage( "res/blobblack1.png" )
 img_blobblack2 = gfx.newImage( "res/blobblack2.png" )
@@ -221,10 +225,12 @@ function moveObject( object, dx, dy )
    local new_y = object.y + dy
 
    -- Check collisions
-   local take_back = false
-   if objectStaticCollisions( object, new_x, new_y ) then take_back = true end
+   local collides = objectStaticCollisions( object, new_x, new_y )
 
-   if not take_back then
+   if collides == "spikes" then
+      destroyObject( object )
+      return false
+   elseif not collides then
       for x=object.x,object.x+object.width-1 do
          for y=object.y,object.y+object.height-1 do
             current_room.grid[x][y].obj = nil
@@ -334,6 +340,18 @@ function destroyObject( object )
 end
 
 function drawObjects()
+   if current_room.objects.chains then
+      for _,chain in pairs(current_room.objects.chains) do
+         local link = current_room.objects[chain.link]
+         local lx = link.x + (link.width/2)
+         local ly = link.y + (link.height/2)
+         gfx.setColor( LIGHT_GRAY )
+         gfx.rectangle( "fill", chain.x, chain.y, 1, 1 )
+         gfx.setColor( LIGHT_GRAY[1], LIGHT_GRAY[2], LIGHT_GRAY[3], 127 )
+         gfx.line( chain.x+0.5, chain.y+0.5, lx+0.5, ly+0.5 )
+      end
+   end
+
    for _,object in pairs(current_room.objects) do
 
       if object.class == "bomb" then
@@ -361,6 +379,20 @@ function drawObjects()
          else
             gfx.setColor( RED_MAGNET )
             gfx.rectangle( "fill", object.x+1, object.y-1, 1, 1 )
+         end
+      end
+
+      if object.class == "spikes" then
+         gfx.setColor( WHITE )
+         if object.facing == "right" or object.facing == "left" then
+            for y=object.y,object.y+object.height-2,4 do
+               gfx.draw( img_spikes[object.facing], object.x, y )
+            end
+         else
+            for x=object.x,object.x+object.width-2,4 do
+               gfx.draw( img_spikes[object.facing], x, object.y )
+            end
+
          end
       end
 
@@ -496,13 +528,11 @@ function drawTriggers()
    for _,trigger in pairs(current_room.triggers) do
 
       if trigger.class == "button" then
-         if trigger.color == "red" then gfx.setColor( RED_MAGNET ) end
-         if trigger.color == "black" then gfx.setColor( LIGHT_GRAY ) end
+         gfx.setColor( LIGHT_GRAY )
 
          gfx.rectangle( "fill", trigger.x, trigger.y, trigger.width, trigger.height )
 
-         if trigger.color == "red" then gfx.setColor( RED_MAGNET_EDGE ) end
-         if trigger.color == "black" then gfx.setColor( BLACK ) end
+         gfx.setColor( BLACK )
 
          gfx.rectangle( "fill", trigger.x, trigger.y, 1, 1 )
          gfx.rectangle( "fill", trigger.x + trigger.width-1, trigger.y, 1, 1 )
@@ -511,8 +541,7 @@ function drawTriggers()
 
          if not trigger.pressed then
             gfx.rectangle( "fill", trigger.x+1, trigger.y+1, trigger.width-2, trigger.height-2 )
-            if trigger.color == "red" then gfx.setColor( RED_MAGNET ) end
-            if trigger.color == "black" then gfx.setColor( LIGHT_GRAY ) end
+            gfx.setColor( LIGHT_GRAY )
             gfx.rectangle( "fill", trigger.x+2, trigger.y+2, trigger.width-4, trigger.height-4 )
          end
       end
@@ -831,7 +860,7 @@ function generateRoom( input )
 
             -- Custom shapes! Scatter these around ;D
             -- magnet, warpdot, lamp, whirlwind, bomb, sword
-            -- miasmamark, 
+            -- miasmamark, chain,
             -- cat, fish, deer, scarab,
             -- eye, ankh, apple, heart,
             -- invader, companion,
@@ -941,6 +970,28 @@ function generateRoom( input )
                room.grid[geometry.x - 1][geometry.y + 1] = { id=geometry.mark }
                room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
                room.grid[geometry.x + 2][geometry.y + 0] = { id=geometry.mark }
+            end
+
+            if geometry.style == "chain" then
+               room.grid[geometry.x + 1][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 0] = { id=geometry.mark }
+
+               room.grid[geometry.x + 0][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 9][geometry.y + 1] = { id=geometry.mark }
+
+               room.grid[geometry.x + 1][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 2][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 5][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 7][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 2] = { id=geometry.mark }
+
             end
 
             if geometry.style == "warpdot" then
@@ -1294,6 +1345,34 @@ function generateRoom( input )
 
                if obj.on then lightTorch( obj, room ) end
             end
+            
+            if object.class == "spikes" then
+               local obj = shallowcopy( object )
+               room.objects[obj.id] = obj
+               if obj.facing == "right" or obj.facing == "left" then
+                  obj.width = 4
+                  if (obj.height - 1) % 4 ~= 0 then
+                     obj.height = obj.height - ((obj.height - 1) % 4)
+                  end
+               else
+                  obj.height = 4
+                  if (obj.width - 1) % 4 ~= 0 then
+                     obj.width = obj.width - ((obj.width - 1) % 4)
+                  end
+               end
+               for x=obj.x,obj.x+obj.width-1 do
+                  for y=obj.y,obj.y+obj.height-1 do
+                     room.grid[x][y].obj = obj
+                  end
+               end
+            end
+
+            if object.class == "chain" then
+               local obj = shallowcopy( object )
+               obj.passable = true
+               if not room.objects.chains then room.objects.chains = { } end
+               room.objects.chains[obj.id] = obj
+            end
 
             if object.class == "magnet" then
                if not player.unlocked[1] then
@@ -1505,6 +1584,38 @@ function updateRoom()
 
    local destroyed = { }
    local killed = { }
+
+   if current_room.objects.chains then
+      for _,chain in pairs(current_room.objects.chains) do
+         if chain.class == "chain" then
+            -- Pull the attached object towards the origin
+            local link = current_room.objects[chain.link]
+            if not link.velocity then 
+               link.velocity = { x=0, y=0 } 
+               link.x_move_ticks = 0
+               link.y_move_ticks = 0
+            end
+            local dx = chain.x - (link.x + ((link.width-1)/2))
+            local dy = chain.y - (link.y + ((link.height-1)/2))
+            local dsum = math.abs(dx) + math.abs(dy)
+
+            local r2 = chain.length * chain.length
+            local dsquared = (dx * dx) + (dy * dy)
+            if math.random() < (dsquared / r2) then
+               if math.random() < (math.abs(dx) / dsum) then
+                  local dxv = -1
+                  if dx > 0 then dxv = 1 end
+                  link.velocity.x = link.velocity.x + dxv 
+               else
+                  local dyv = -1
+                  if dy > 0 then dyv = 1 end
+                  link.velocity.y = link.velocity.y + dyv
+               end
+            end
+         end
+      end
+   end
+
    for _,object in pairs(current_room.objects) do
 
       if object.class == "flame" then
@@ -1530,11 +1641,6 @@ function updateRoom()
          end
          
          -- TODO flicker
-
-      end
-
-      if object.class == "chain" then
-         -- Pull the attached object towards the origin
 
       end
 
@@ -1858,14 +1964,13 @@ function updateRoom()
          local pressed = false
 
          for _,obj in pairs(current_room.objects) do
-            if obj.class == "block" and obj.color == trigger.color and
+            if obj.class == "block" and
                trigger.x <= obj.x + obj.width-1 and trigger.x + trigger.width-1 >= obj.x
                and trigger.y <= obj.y + obj.height-1 and trigger.y + trigger.height-1 >= obj.y then
                pressed = true
             end 
          end
-         if trigger.color == "black" and
-            player.x <= trigger.x + trigger.width-1 and player.x + 2 >= trigger.x
+         if player.x <= trigger.x + trigger.width-1 and player.x + 2 >= trigger.x
             and player.y <= trigger.y + trigger.height-1 and player.y + 2 >= trigger.y then
             pressed = true
          end
@@ -2073,6 +2178,8 @@ function moveEnemy( enemy, dx, dy )
    if collides == 'player' then
       -- Dead
       killPlayer()
+   elseif collides == 'spikes' then
+      destroyEnemy( enemy )
    elseif not collides then
       enemy.x = new_x
       enemy.y = new_y
@@ -2350,27 +2457,43 @@ function getMagnetTarget()
       local x = player.x
       local dx = -1
       local end_x = 2
+      local searchbox = { x = end_x, y = player.y, width = x + 1 - end_x, height = 3 }
       if player.facing == "right" then
          x = x + 2
          dx = 1
-         end_x = current_room.height - 3
+         end_x = current_room.width - 3
+         searchbox = { x = x + 2, y = player.y, width = end_x + 1 - x, height = 3 }
+      end
+
+      local enemies = { }
+      for _,enemy in pairs(current_room.enemies) do
+         if enemy.magnetic and intersects( enemy, searchbox ) then
+            enemies[enemy.id] = { e=enemy, near_x = enemy.x + enemy.width - 1 }
+            if player.facing == "right" then
+               enemies[enemy.id].near_x = enemy.x
+            end
+         end
       end
 
       if (player.facing == "left" and x > end_x) or (player.facing == "right" and x < end_x) then
          while x ~= end_x and not player.magnet_target do
-            x = x + dx
-            for y=player.y,player.y+2 do
-               local obj = current_room.grid[x][y].obj
-               if obj and obj.magnetic then -- TODO Multicolor
-                  player.magnet_target = current_room.grid[x][y].obj
-                  if not player.magnet_target.velocity then
-                     player.magnet_target.velocity = { x=0, y=0 }
-                  end
-                  if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
-                  if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
-                  break
+            for _,enemy in pairs(enemies) do
+               if enemy.near_x == x then
+                  player.magnet_target = enemy.e
                end
             end
+            for y=player.y,player.y+2 do
+               local obj = current_room.grid[x][y].obj
+               if obj and obj.magnetic then
+                  player.magnet_target = current_room.grid[x][y].obj
+               end
+            end
+            if player.magnet_target then
+               if not player.magnet_target.velocity then player.magnet_target.velocity = { x=0, y=0 } end
+               if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
+               if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
+            end
+            x = x + dx
          end
       end
 
@@ -2378,27 +2501,43 @@ function getMagnetTarget()
       local y = player.y
       local dy = -1
       local end_y = 2
+      local searchbox = { x = player.x, y = end_y, width = 3, height = y + 1 - end_y }
       if player.facing == "down" then
          y = y + 2
          dy = 1
          end_y = current_room.height - 3
+         searchbox = { x = player.x, y = y, width = 3, height = end_y + 1 - y }
+      end
+
+      local enemies = { }
+      for _,enemy in pairs(current_room.enemies) do
+         if enemy.magnetic and intersects( enemy, searchbox ) then
+            enemies[enemy.id] = { e=enemy, near_y = enemy.y + enemy.height - 1 }
+            if player.facing == "down" then
+               enemies[enemy.id].near_y = enemy.y
+            end
+         end
       end
 
       if (player.facing == "up" and y > end_y) or (player.facing == "down" and y < end_y) then
          while y ~= end_y and not player.magnet_target do
-            y = y + dy
-            for x=player.x,player.x+2 do
-               local obj = current_room.grid[x][y].obj
-               if obj and obj.magnetic then -- TODO Multicolor
-                  player.magnet_target = current_room.grid[x][y].obj
-                  if not player.magnet_target.velocity then
-                     player.magnet_target.velocity = { x=0, y=0 }
-                  end
-                  if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
-                  if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
-                  break
+            for _,enemy in pairs(enemies) do
+               if enemy.near_y == y then
+                  player.magnet_target = enemy.e
                end
             end
+            for x=player.x,player.x+2 do
+               local obj = current_room.grid[x][y].obj
+               if obj and obj.magnetic then
+                  player.magnet_target = current_room.grid[x][y].obj
+               end
+            end
+            if player.magnet_target then
+               if not player.magnet_target.velocity then player.magnet_target.velocity = { x=0, y=0 } end
+               if not player.magnet_target.x_move_ticks then player.magnet_target.x_move_ticks = 0 end
+               if not player.magnet_target.y_move_ticks then player.magnet_target.y_move_ticks = 0 end
+            end
+            y = y + dy
          end
       end
    end
@@ -2529,7 +2668,6 @@ function playerActionOn()
    if player.color == 1 then
       -- Enter magnet state
       player.state = "magnet"
-      player.magnet_pull = not player.magnet_pull
       speed = MAGNET_SPEED
 
       getMagnetTarget()
@@ -2612,6 +2750,7 @@ function playerActionOff()
    if player.color == 1 then
       player.state = "normal"
       player.magnet_target = nil
+      player.magnet_pull = not player.magnet_pull
       speed = BASE_SPEED
    end
 end
@@ -2655,9 +2794,15 @@ function drawPlayer()
    end
    if player.color == 1 then
       gfx.setColor( RED_MAGNET[1], RED_MAGNET[2], RED_MAGNET[3], a )
-      gfx.rectangle( 'fill', -1.5, -1.5, 1, 2 )
-      gfx.rectangle( 'fill', -0.5, -0.5, 1, 1 )
-      gfx.rectangle( 'fill', 0.5, -1.5, 1, 2 )
+      if player.magnet_pull then
+         gfx.rectangle( 'fill', -1.5, -1.5, 3, 1 )
+         gfx.rectangle( 'fill', -1.5, -0.5, 1, 1 )
+         gfx.rectangle( 'fill', 0.5, -0.5, 1, 1 )
+      else
+         gfx.rectangle( 'fill', -1.5, -1.5, 1, 2 )
+         gfx.rectangle( 'fill', -0.5, -0.5, 1, 1 )
+         gfx.rectangle( 'fill', 0.5, -1.5, 1, 2 )
+      end
    end
    if player.color == 2 then
       gfx.setColor( ORANGE_WARP[1], ORANGE_WARP[2], ORANGE_WARP[3], a )
@@ -2683,9 +2828,7 @@ function drawPlayer()
    end
    if player.color == 6 then
       gfx.setColor( VIOLET_SWORD[1], VIOLET_SWORD[2], VIOLET_SWORD[3], a )
-      gfx.rectangle( 'fill', -1.5, -1.5, 3, 1 )
-      gfx.rectangle( 'fill', -1.5, -0.5, 1, 1 )
-      gfx.rectangle( 'fill', 0.5, -0.5, 1, 1 )
+      gfx.rectangle( 'fill', -1.5, -1.5, 3, 2 )
    end
 
    -- Effects
@@ -3036,6 +3179,11 @@ function playerStaticCollisions( new_x, new_y, direction )
 
                return true
             end
+
+            if spot.obj.class == "spikes" then
+               killPlayer()
+               return true
+            end
          end
 
          if spot.id == 'wall'
@@ -3121,7 +3269,7 @@ function objectStaticCollisions( object, new_x, new_y )
    end
 
    for _,obj in pairs(current_room.objects) do
-      if not obj.passable and obj.id ~= object.id and
+      if not obj.passable and obj.id and obj.id ~= object.id and
          new_x <= obj.x + obj.width-1 and new_x + object.width-1 >= obj.x
          and new_y <= obj.y + obj.height-1 and new_y + object.height-1 >= obj.y then
          return true
@@ -3135,6 +3283,9 @@ function objectStaticCollisions( object, new_x, new_y )
             or current_room.grid[x][y].id == 'door' 
             then 
             return true
+         end
+         if current_room.grid[x][y].obj and current_room.grid[x][y].obj.class == "spikes" then
+            return "spikes"
          end
       end
    end
@@ -3304,8 +3455,8 @@ function love.load()
 
    love.window.setTitle( 'Low Res Adventure' )
 
-   initPlayer( 80, 10 )
-   loadNewRoom( "menagerie" )
+   initPlayer( 50, 50 )
+   loadNewRoom( "home" )
    centerCamera()
 end
 
