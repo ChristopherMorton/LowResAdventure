@@ -2417,6 +2417,11 @@ function moveEnemy( enemy, dx, dy )
    if (not collides) or (collides.hit == "white" and enemy.passable ) then
       enemy.x = new_x
       enemy.y = new_y
+
+      if player.state == "magnet" and not (player.magnet_target) then
+         getMagnetTarget()
+      end
+
       return true
    end
 
@@ -2710,7 +2715,7 @@ function initPlayer( x, y )
                     unlocked = { } }
    player_start = { x = player.x, y = player.y }
    player.unlocked[0] = true
-   player.unlocked[1] = true
+   --player.unlocked[1] = true
    --player.unlocked[2] = true
    --player.unlocked[3] = true
    --player.unlocked[4] = true
@@ -3663,11 +3668,13 @@ function dropFlame()
 end
 
 function lightTorch( torch, room )
-   if not room then room = current_room end
-   torch.on = true
-   room.lights[torch.id] = torch
+   if torch.on == false then
+      if not room then room = current_room end
+      torch.on = true
+      room.lights[torch.id] = torch
 
-   removeLocks( torch )
+      removeLocks( torch )
+   end
    if torch.to_timeout then torch.timeout = torch.to_timeout end
 end
 
@@ -3812,8 +3819,8 @@ function love.load()
 
    love.window.setTitle( 'Low Res Adventure' )
 
-   initPlayer( 30, 30 )
-   loadNewRoom( "boss2" )
+   initPlayer( 16, 40 )
+   loadNewRoom( "magnetpuzzle2" )
    centerCamera()
 end
 
