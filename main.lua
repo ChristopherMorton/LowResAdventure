@@ -8,6 +8,7 @@ gfx = love.graphics
 
 local game_state = "play"
 local game_state_timer = 0
+local game_state_backup = "play"
 local player
 local current_room
 local prev_room
@@ -63,6 +64,19 @@ BLOB_MAX_VELOCITY = 15
 BLOB_ANIM_TIMER = 24 --18
 BLOB_MOVE_CHANCE = 0.2 --0.5
 BLOB_MOVE_CHANCE_MODIFIER = 0.3 --0.5
+
+ARCHER_WIDTH = 9
+ARCHER_HEIGHT = 9
+ARCHER_IDLE_TIMER = 12
+ARCHER_FIRE_TIMER = 30
+ARCHER_FIRE_CHANCE = 0.2
+ARCHER_PAUSE_TIMER = 30
+ARCHER_PAUSE_CHANCE = 0.1
+ARCHER_FLEE_TIMER = 5
+ARCHER_FLEE_RADIUS = 30
+ARCHER_ANIM_TIMER = 24
+
+ARROW_SPEED = 30
 
 BOSS1_BASIC_TIMER = 8
 BOSS1_FAST_TIMER = 3
@@ -124,6 +138,13 @@ img_blobblue1 = gfx.newImage( "res/blobblue1.png" )
 img_blobblue2 = gfx.newImage( "res/blobblue2.png" )
 img_blobviolet1 = gfx.newImage( "res/blobviolet1.png" )
 img_blobviolet2 = gfx.newImage( "res/blobviolet2.png" )
+
+img_archerblack1 = gfx.newImage( "res/archerblack1.png" )
+img_archerblack2 = gfx.newImage( "res/archerblack2.png" )
+img_archerred1 = gfx.newImage( "res/archerred1.png" )
+img_archerred2 = gfx.newImage( "res/archerred2.png" )
+img_arrowblack = gfx.newImage( "res/arrowblack.png" )
+img_arrowred = gfx.newImage( "res/arrowred.png" )
 
 img_boss1_mid = {
    gfx.newImage( "res/boss1mid.png" ),
@@ -227,10 +248,7 @@ function moveObject( object, dx, dy )
    -- Check collisions
    local collides = objectStaticCollisions( object, new_x, new_y )
 
-   if collides == "spikes" then
-      destroyObject( object )
-      return false
-   elseif not collides then
+   if not collides then
       for x=object.x,object.x+object.width-1 do
          for y=object.y,object.y+object.height-1 do
             current_room.grid[x][y].obj = nil
@@ -245,9 +263,13 @@ function moveObject( object, dx, dy )
       end
 
       return true
-   else
-      return false
    end
+
+   if collides.hit == "spikes" then
+      destroyObject( object )
+   end
+
+   return false
 end
 
 function destroyObject( object )
@@ -527,7 +549,7 @@ end
 function drawTriggers()
    for _,trigger in pairs(current_room.triggers) do
 
-      if trigger.class == "button" then
+      if trigger.class == "button" or trigger.class == "numberbutton" then
          gfx.setColor( LIGHT_GRAY )
 
          gfx.rectangle( "fill", trigger.x, trigger.y, trigger.width, trigger.height )
@@ -654,6 +676,8 @@ function generateRoom( input )
                   effects = { },
                   images = { },
                   lights = { },
+                  numbers = { },
+                  number = 0,
                 }
 
    if input.darkness then room.darkness = input.darkness
@@ -802,13 +826,13 @@ function generateRoom( input )
             if geometry.style == "altar" then
                for x=19,44 do
                   for y=9,34 do
-                     room.grid[x][y] = { id="drawingwhite" }
+                     room.grid[x][y] = { id="white" }
                   end
                end
                for x=29,34 do
                   for y=27,39 do
                      if y % 2 == 0 then
-                        room.grid[x][y] = { id="drawingwhite" }
+                        room.grid[x][y] = { id="white" }
                      else
                         room.grid[x][y] = { id="drawing" }
                      end
@@ -1025,6 +1049,10 @@ function generateRoom( input )
                room.grid[geometry.x + 2][geometry.y + 4] = { id=geometry.mark }
                room.grid[geometry.x + 4][geometry.y + 4] = { id=geometry.mark }
                room.grid[geometry.x + 5][geometry.y + 4] = { id=geometry.mark }
+            end
+
+            if geometry.style == "snake" then
+
             end
 
             if geometry.style == "fish" then
@@ -1283,6 +1311,34 @@ function generateRoom( input )
                room.grid[geometry.x + 4][geometry.y + 3] = { id=geometry.mark }
             end
 
+            if geometry.style == "kirby" then
+               room.grid[geometry.x + 1][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 0][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 1][geometry.y + 4] = { id=geometry.mark }
+
+               room.grid[geometry.x + 3][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 4][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 3][geometry.y + 3] = { id=geometry.mark }
+
+               room.grid[geometry.x + 6][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 6][geometry.y + 1] = { id=geometry.mark }
+
+               room.grid[geometry.x + 8][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 8][geometry.y + 1] = { id=geometry.mark }
+
+               room.grid[geometry.x + 10][geometry.y + 0] = { id=geometry.mark }
+               room.grid[geometry.x + 11][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 11][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 11][geometry.y + 3] = { id=geometry.mark }
+               room.grid[geometry.x + 10][geometry.y + 4] = { id=geometry.mark }
+
+               room.grid[geometry.x + 13][geometry.y + 1] = { id=geometry.mark }
+               room.grid[geometry.x + 14][geometry.y + 2] = { id=geometry.mark }
+               room.grid[geometry.x + 13][geometry.y + 3] = { id=geometry.mark }
+            end
+
          end
       end
 
@@ -1488,6 +1544,19 @@ function generateRoom( input )
                room.enemies[e.id] = e
             end
 
+            if enemy.class == "archer" then
+               local e = shallowcopy(enemy)
+
+               e.width = ARCHER_WIDTH
+               e.height = ARCHER_HEIGHT
+               e.facing = "down"
+
+               e.state = "idle"
+               e.state_timer = ARCHER_IDLE_TIMER
+               
+               room.enemies[e.id] = e
+            end
+
             if enemy.class == "boss1" then
                local e = { id="boss1", class="boss1", x=enemy.x, y=enemy.y,
                            width = 8, height = 8, facing = "right",
@@ -1508,6 +1577,13 @@ function generateRoom( input )
                local trig = shallowcopy( trigger )
                trig.pressed = false
                room.triggers[trig.id] = trig 
+            end
+
+            if trigger.class == "numberbutton" then
+               local trig = shallowcopy( trigger )
+               trig.pressed = false
+               room.triggers[trig.id] = trig 
+               room.numbers[trig.number] = trig
             end
 
             if trigger.class == "area" then
@@ -1803,7 +1879,124 @@ function updateRoom()
                else enemy.velocity.y = enemy.velocity.y - 1 end
             end
          end
+      end
 
+      if enemy.class == "archer" then
+         local dx = (player.x + 1) - (enemy.x + 4)
+         local dy = (player.y + 1) - (enemy.y + 4)
+         local dsum = math.abs(dx) + math.abs(dy)
+
+         -- If idle, walk in random directions
+         -- If 'sees' player in a sightline, fire an arrow
+         -- If player gets close, run away
+         if dsum <= ARCHER_FLEE_RADIUS and enemy.state ~= "fire" then 
+            enemy.state = "flee" 
+         end
+
+         if enemy.state == "pause" then
+            enemy.state_timer = enemy.state_timer - 1
+            if enemy.state_timer == 0 then
+               enemy.state = "idle"
+               enemy.state_timer = ARCHER_IDLE_TIMER
+               enemy.facing = randomDirection()
+            end
+         end
+
+         if enemy.state == "flee" then
+            if dsum > ARCHER_FLEE_RADIUS then
+               enemy.state = "idle"
+               enemy.state_timer = ARCHER_IDLE_TIMER
+            else
+               -- Turn away from player
+               local ratio = math.abs(dx / dy)
+               if math.abs(dx) >= math.abs(dy) then
+                  if dx < 0 then enemy.facing = "right" else enemy.facing = "left" end
+                  ratio = math.abs(dy / dx)
+               else
+                  if dy < 0 then enemy.facing = "down" else enemy.facing = "up" end
+               end
+               enemy.state_timer = enemy.state_timer - 1
+               if enemy.state_timer == 0 then
+                  enemy.state_timer = ARCHER_FLEE_TIMER
+                  -- Move
+                  local dx1 = 0
+                  local dy1 = 0
+                  if dx < 0 then dx1 = 1 elseif dx > 0 then dx1 = -1 end
+                  if dy < 0 then dy1 = 1 elseif dy > 0 then dy1 = -1 end
+                  if math.abs(dx) >= math.abs(dy) then
+                     if math.random() > ratio then dy1 = 0 end
+                  else
+                     if math.random() > ratio then dx1 = 0 end
+                  end
+
+                  if not moveEnemy( enemy, dx1, dy1 ) then 
+                     local can_move = true
+                     if math.abs(dx) >= math.abs(dy) then
+                        can_move = moveEnemy( enemy, dx1, 0 )
+                     else
+                        can_move = moveEnemy( enemy, 0, dy1 )
+                     end
+                  end
+               end
+            end
+         end
+
+         if enemy.state == "idle" or enemy.state == "cooldown" then
+            enemy.state_timer = enemy.state_timer - 1
+            if enemy.state_timer == 0 then
+               if not moveEnemyForward( enemy ) or math.random() < ARCHER_PAUSE_CHANCE then
+                  enemy.state = "pause"
+                  enemy.state_timer = ARCHER_PAUSE_TIMER
+               else
+                  enemy.state_timer = ARCHER_IDLE_TIMER
+               end
+            end
+         end
+
+         if enemy.state ~= "fire" and enemy.state ~= "cooldown" and 
+            ((enemy.state ~= "flee" and math.random() < ARCHER_FIRE_CHANCE)
+            or (enemy.state == "flee" and math.random() * 2 < ARCHER_FIRE_CHANCE)) then
+            -- Check if player is in sightline
+            local lr_sight = { x = 0, y = enemy.y+2, width = current_room.width, height = enemy.height-4 }
+            if intersects( player, lr_sight ) then
+               if player.x < enemy.x then
+                  enemy.facing = "left"
+               else
+                  enemy.facing = "right"
+               end
+               enemy.state = "fire"
+               enemy.state_timer = ARCHER_FIRE_TIMER * 2
+            end
+            local ud_sight = { x = enemy.x+2, y = 0, width = enemy.width-4, height = current_room.height }
+            if intersects( player, ud_sight ) then
+               if player.y < enemy.y then
+                  enemy.facing = "up"
+               else
+                  enemy.facing = "down"
+               end
+               enemy.state = "fire"
+               enemy.state_timer = ARCHER_FIRE_TIMER * 2
+            end
+         end
+
+         if enemy.state == "fire" then
+            enemy.state_timer = enemy.state_timer - 1
+            if enemy.state_timer == ARCHER_FIRE_TIMER then
+               -- Fire
+               if enemy.facing == "up" then
+                  fireArrow( enemy.x+3, enemy.y-2, enemy.facing, enemy.color )
+               elseif enemy.facing == "down" then
+                  fireArrow( enemy.x+3, enemy.y+enemy.height+1, enemy.facing, enemy.color )
+               elseif enemy.facing == "left" then
+                  fireArrow( enemy.x-2, enemy.y+3, enemy.facing, enemy.color )
+               elseif enemy.facing == "up" then
+                  fireArrow( enemy.x+enemy.width+1, enemy.y+3, enemy.facing, enemy.color )
+               end
+            elseif enemy.state_timer == 0 then
+               enemy.state = "cooldown"
+               enemy.state_timer = ARCHER_IDLE_TIMER
+            end
+         end 
       end
 
       if enemy.velocity then
@@ -1823,7 +2016,9 @@ function updateRoom()
                if (vel.x > 0) then
                   if (moveEnemy( enemy, 1, 0 )) then
                      -- success
-                     vel.x = vel.x - 1
+                     if not enemy.frictionless then
+                        vel.x = vel.x - 1
+                     end
                   else 
                      -- collision 
                      vel.x = 0
@@ -1832,7 +2027,9 @@ function updateRoom()
                if (vel.x < 0) then
                   if (moveEnemy( enemy, -1, 0 )) then
                      -- success
-                     vel.x = vel.x + 1
+                     if not enemy.frictionless then
+                        vel.x = vel.x + 1
+                     end
                   else 
                      -- collision 
                      vel.x = 0
@@ -1847,7 +2044,9 @@ function updateRoom()
                if (vel.y > 0) then
                   if (moveEnemy( enemy, 0, 1 )) then
                      -- success
-                     vel.y = vel.y - 1
+                     if not enemy.frictionless then
+                        vel.y = vel.y - 1
+                     end
                   else 
                      -- collision 
                      vel.y = 0
@@ -1856,12 +2055,22 @@ function updateRoom()
                if (vel.y < 0) then
                   if (moveEnemy( enemy, 0, -1 )) then
                      -- success
-                     vel.y = vel.y + 1
+                     if not enemy.frictionless then
+                        vel.y = vel.y + 1
+                     end
                   else 
                      -- collision 
                      vel.y = 0
          end end end end
 
+      end
+
+      if enemy.class == "arrow" then
+         arrowRotate( enemy )
+         if (math.abs(enemy.velocity.x) + math.abs(enemy.velocity.y)) < (ARROW_SPEED / 3)
+            and not (player.magnet_target and player.magnet_target.id == enemy.id) then
+            killed[enemy.id] = enemy
+         end
       end
 
       if enemy.class == "boss1" then
@@ -1960,7 +2169,8 @@ function updateRoom()
    -- Triggers
    for _,trigger in pairs(current_room.triggers) do
 
-      if trigger.class == "button" and trigger.targets and trigger.targets ~= { } then
+      if (trigger.class == "button" or trigger.class == "numberbutton")
+         and trigger.targets and trigger.targets ~= { } then
          local pressed = false
 
          for _,obj in pairs(current_room.objects) do
@@ -1976,9 +2186,25 @@ function updateRoom()
          end
 
          if pressed and not trigger.pressed then
-            trigger.pressed = true
-            removeLocks( trigger )
-         elseif not pressed and trigger.pressed then
+            if trigger.class == "numberbutton" then
+               if current_room.number == trigger.number - 1 then
+                  current_room.number = trigger.number
+                  trigger.pressed = true
+                  removeLocks( trigger )
+               else
+                  -- Wrong order
+                  for n=1,current_room.number do
+                     local t = current_room.numbers[n]
+                     t.pressed = false
+                     addLocks( t )
+                  end
+                  current_room.number = 0
+               end
+            else
+               trigger.pressed = true
+               removeLocks( trigger )
+            end
+         elseif not pressed and trigger.pressed and trigger.class ~= "numberbutton" then
             trigger.pressed = false
             addLocks( trigger )
          end
@@ -2072,7 +2298,7 @@ function drawRoom()
          elseif current_room.grid[i][j].id == 'drawing' then 
             gfx.setColor( DRAWING_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
-         elseif current_room.grid[i][j].id == 'drawingwhite' then 
+         elseif current_room.grid[i][j].id == 'white' then 
             gfx.setColor( WHITE_SAND )
             gfx.rectangle( 'fill', i, j, 1, 1 ) 
          end
@@ -2089,30 +2315,30 @@ function openHiddenDoor( room, step )
       for i=door.start,door.finish do
          if step == 1 then
             room.grid[i][1] = { id=nil }
-            createEffect( "rubble", WALL_SAND, i, 1 )
+            createEffect( "rubble", WALL_SAND, i, 1, room )
          else
             room.grid[i][0] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
-            createEffect( "rubble", WALL_SAND, i, 0 )
+            createEffect( "rubble", WALL_SAND, i, 0, room )
          end
       end
    elseif door.side == 'down' then
       for i=door.start,door.finish do
          if step == 1 then
             room.grid[i][room.height-2] = { id=nil }
-            createEffect( "rubble", WALL_SAND, i, room.height-2 )
+            createEffect( "rubble", WALL_SAND, i, room.height-2, room )
          else
             room.grid[i][room.height-1] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
-            createEffect( "rubble", WALL_SAND, i, room.height-1 )
+            createEffect( "rubble", WALL_SAND, i, room.height-1, room )
          end
       end
    elseif door.side == 'right' then
       for j=door.start,door.finish do
          if step == 1 then
             room.grid[room.width-2][j] = { id=nil }
-            createEffect( "rubble", WALL_SAND, room.width-2, j )
+            createEffect( "rubble", WALL_SAND, room.width-2, j, room )
          else
             room.grid[room.width-1][j] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
-            createEffect( "rubble", WALL_SAND, room.width-1, j )
+            createEffect( "rubble", WALL_SAND, room.width-1, j, room )
          end
       end
    elseif door.side == 'left' then
@@ -2121,10 +2347,10 @@ function openHiddenDoor( room, step )
          room.grid[1][j] = { id=nil }
          if step == 1 then
             room.grid[1][j] = { id=nil }
-            createEffect( "rubble", WALL_SAND, 1, j )
+            createEffect( "rubble", WALL_SAND, 1, j, room )
          else
             room.grid[0][j] = { id='door', side=door.side, to=door.to, to_x=door.to_x, to_y=door.to_y }
-            createEffect( "rubble", WALL_SAND, 0, j )
+            createEffect( "rubble", WALL_SAND, 0, j, room )
          end
       end
    end
@@ -2168,6 +2394,19 @@ end
 
 --- Enemies
 
+function moveEnemyForward( enemy )
+   if not enemy.facing then return false end
+
+   local dx = 0
+   local dy = 0
+   if enemy.facing == "up" then dy = -1 end
+   if enemy.facing == "down" then dy = 1 end
+   if enemy.facing == "left" then dx = -1 end
+   if enemy.facing == "right" then dx = 1 end
+
+   return moveEnemy( enemy, dx, dy )
+end
+
 function moveEnemy( enemy, dx, dy )
    local new_x = enemy.x + dx
    local new_y = enemy.y + dy
@@ -2175,21 +2414,60 @@ function moveEnemy( enemy, dx, dy )
    -- Check collisions
    local collides = objectStaticCollisions( enemy, new_x, new_y )
 
-   if collides == 'player' then
-      -- Dead
-      killPlayer()
-   elseif collides == 'spikes' then
-      destroyEnemy( enemy )
-   elseif not collides then
+   if (not collides) or (collides.hit == "white" and enemy.passable ) then
       enemy.x = new_x
       enemy.y = new_y
-
       return true
-   else
-      return false
    end
+
+   if collides.hit == 'player' then
+      -- Dead
+      killPlayer()
+   end
+
+   if collides.hit == 'enemy' and enemy.class == "arrow" then
+      if collides.enemy.color and collides.enemy.color == enemy.color then
+         destroyEnemy( collides.enemy )
+      end
+   end
+
+   if collides.hit == 'spikes' or enemy.class == "arrow" then
+      destroyEnemy( enemy )
+   end
+
+   return false
 end
 
+function fireArrow( x, y, dir, color )
+   if not color then color = "black" end
+
+   local arrow = { id=id_cnt, class="arrow", color=color, x=x, y=y, width=3, height=3, passable=true, frictionless = true }
+   id_cnt = id_cnt + 1
+
+   arrow.velocity = { x = 0, y = 0 }
+   if dir == "up" then arrow.velocity.y = -ARROW_SPEED
+   elseif dir == "down" then arrow.velocity.y = ARROW_SPEED
+   elseif dir == "left" then arrow.velocity.x = -ARROW_SPEED
+   elseif dir == "right" then arrow.velocity.x = ARROW_SPEED end
+   arrow.x_move_ticks = 0
+   arrow.y_move_ticks = 0
+
+   arrowRotate( arrow )
+
+   if arrow.color == "red" then arrow.magnetic = true end
+
+   current_room.enemies[arrow.id] = arrow
+end
+
+function arrowRotate( arrow )
+   local dx = arrow.velocity.x
+   local dy = arrow.velocity.y
+   if math.abs(dx) > math.abs(dy) then
+      if dx < 0 then arrow.facing = "left" else arrow.facing = "right" end
+   else
+      if dy < 0 then arrow.facing = "up" else arrow.facing = "down" end
+   end
+end
 
 function destroyEnemy( enemy )
 
@@ -2229,6 +2507,35 @@ function destroyEnemy( enemy )
          end
       end
    end
+
+   if enemy.class == "archer" then
+
+      local color = DARK_GRAY
+
+      for x=enemy.x+1,enemy.x+enemy.width-2 do
+         for y=enemy.y+1,enemy.y+enemy.height-2 do 
+            createEffect( "rubble", color, x, y )
+         end
+      end
+   end
+
+   if enemy.class == "arrow" then
+      local color = BLACK
+      if enemy.color == "red" then color = RED_MAGNET end
+      local xmin = enemy.x + 1
+      local xmax = xmin
+      local ymin = enemy.y + 1
+      local ymax = ymin
+      if enemy.facing == "up" then ymax = ymin + 4
+      elseif enemy.facing == "down" then ymin = ymin - 4
+      elseif enemy.facing == "left" then xmax = xmax + 4
+      elseif enemy.facing == "right" then xmin = xmin - 4 end
+      for x=xmin,xmax do
+         for y=ymin,ymax do
+            createEffect( "rubble", color, x, y )
+         end
+      end
+   end
 end
 
 
@@ -2254,6 +2561,49 @@ function drawEnemies()
             elseif enemy.color == "blue" then gfx.draw( img_blobblue2, enemy.x, enemy.y )
             elseif enemy.color == "violet" then gfx.draw( img_blobviolet2, enemy.x, enemy.y ) end
          end 
+      end
+
+      if enemy.class == "archer" then
+         translateRotate( enemy.x+(enemy.width/2), enemy.y+(enemy.height/2), enemy.facing )
+         
+         if enemy.state == "fire" then
+            gfx.setColor( WHITE )
+            if enemy.color == "red" then
+               gfx.draw( img_archerred2, -(enemy.width/2), -(enemy.height/2) )
+            else
+               gfx.draw( img_archerblack2, -(enemy.width/2), -(enemy.height/2) )
+            end
+            if enemy.state_timer > ARCHER_FIRE_TIMER then
+               -- Draw cocked arrow
+               if enemy.color == "red" then
+                  gfx.draw( img_arrowred, -1.5, -6.5 )
+               else
+                  gfx.draw( img_arrowblack, -1.5, -6.5 )
+               end
+            end
+         else
+            gfx.setColor( WHITE )
+            if enemy.color == "red" then
+               gfx.draw( img_archerred1, -(enemy.width/2), -(enemy.height/2) )
+            else
+               gfx.draw( img_archerblack1, -(enemy.width/2), -(enemy.height/2) )
+            end
+         end
+
+         deTranslateRotate( enemy.x+(enemy.width/2), enemy.y+(enemy.height/2), enemy.facing )
+      end
+
+      if enemy.class == "arrow" then
+         translateRotate( enemy.x+(enemy.width/2), enemy.y+(enemy.height/2), enemy.facing )
+
+         gfx.setColor( WHITE )
+         if enemy.color == "red" then
+            gfx.draw( img_arrowred, -1.5, -1.5 )
+         else
+            gfx.draw( img_arrowblack, -1.5, -1.5 )
+         end
+
+         deTranslateRotate( enemy.x+(enemy.width/2), enemy.y+(enemy.height/2), enemy.facing )
       end
 
       if enemy.class == "boss1" then
@@ -2362,10 +2712,10 @@ function initPlayer( x, y )
    player.unlocked[0] = true
    player.unlocked[1] = true
    --player.unlocked[2] = true
-   player.unlocked[3] = true
-   player.unlocked[4] = true
-   player.unlocked[5] = true
-   player.unlocked[6] = true
+   --player.unlocked[3] = true
+   --player.unlocked[4] = true
+   --player.unlocked[5] = true
+   --player.unlocked[6] = true
 end
 
 function killPlayer()
@@ -2888,34 +3238,35 @@ end
 
 --- Effects
 
-function createEffect( class, color, x, y )
+function createEffect( class, color, x, y, room )
+   if not room then room = current_room end
 
    if class == "rubble" then
-      current_room.effects[id_cnt] = { id=id_cnt, class="rubble", color=color, dir=randomDirection(), timer = 3 * RUBBLE_DURATION_SEGMENT, x=x, y=y }
+      room.effects[id_cnt] = { id=id_cnt, class="rubble", color=color, dir=randomDirection(), timer = 3 * RUBBLE_DURATION_SEGMENT, x=x, y=y }
    end
 
    if class == "playerdeath" then
-      current_room.effects[id_cnt] = { id=id_cnt, class="playerdeath", color=color, dir=randomDirection(), timer = 4 * DEATH_DURATION_SEGMENT, x=x, y=y }
+      room.effects[id_cnt] = { id=id_cnt, class="playerdeath", color=color, dir=randomDirection(), timer = 4 * DEATH_DURATION_SEGMENT, x=x, y=y }
    end
 
    if class == "explosion" then
-      current_room.effects[id_cnt] = { id=id_cnt, class="explosion", color=color, timer = EXPLOSION_DURATION, x=x, y=y }
+      room.effects[id_cnt] = { id=id_cnt, class="explosion", color=color, timer = EXPLOSION_DURATION, x=x, y=y }
    end
 
    if class == "acquirepower" then
-      current_room.effects[id_cnt] = { id=id_cnt, class="acquirepower", color=color, timer = ACQUIRE_POWER_TIME, x=x, y=y }
+      room.effects[id_cnt] = { id=id_cnt, class="acquirepower", color=color, timer = ACQUIRE_POWER_TIME, x=x, y=y }
    end
 
    if class == "acquire1" then
       local rotate = math.random() * math.pi * 2
       local dx = 10 * math.cos(rotate)
       local dy = 10 * math.sin(rotate)
-      current_room.effects[id_cnt] = { id=id_cnt, class="acquire1", color=color, x=x + dx, y=y + dy, dx= -(dx/50), dy = (-dy/50) }
+      room.effects[id_cnt] = { id=id_cnt, class="acquire1", color=color, x=x + dx, y=y + dy, dx= -(dx/50), dy = (-dy/50) }
    end
 
    if class == "boss1death" then
-      current_room.effects[id_cnt] = { id=id_cnt, class="boss1death", color=color, timer = BOSS1_DEATH_TIME, x=x, y=y }
-      current_room.effects.boss1 = current_room.enemies.boss1
+      room.effects[id_cnt] = { id=id_cnt, class="boss1death", color=color, timer = BOSS1_DEATH_TIME, x=x, y=y }
+      room.effects.boss1 = room.enemies.boss1
    end
 
    id_cnt = id_cnt + 1
@@ -3255,16 +3606,31 @@ function playerUpdateCollisions()
 end
 
 function objectStaticCollisions( object, new_x, new_y )
+
+   for x=new_x,new_x+object.width-1 do
+      for y=new_y,new_y+object.height-1 do
+         if current_room.grid[x][y].id == 'wall'
+            or current_room.grid[x][y].id == 'white' 
+            or current_room.grid[x][y].id == 'door' 
+            then 
+            return { hit = current_room.grid[x][y].id }
+         end
+         if current_room.grid[x][y].obj and current_room.grid[x][y].obj.class == "spikes" then
+            return { hit = "spikes" }
+         end
+      end
+   end
+
    if object.class ~= "bomb" and new_x <= player.x + 2 and new_x + object.width-1 >= player.x
       and new_y <= player.y + 2 and new_y + object.height-1 >= player.y then
-      return 'player'
+      return { hit = 'player' }
    end
 
    for _,enemy in pairs(current_room.enemies) do
       if not enemy.passable and enemy.id ~= object.id and
          new_x <= enemy.x + enemy.width-1 and new_x + object.width-1 >= enemy.x
          and new_y <= enemy.y + enemy.height-1 and new_y + object.height-1 >= enemy.y then
-         return true
+         return { hit = "enemy", enemy = enemy }
       end
    end
 
@@ -3272,23 +3638,10 @@ function objectStaticCollisions( object, new_x, new_y )
       if not obj.passable and obj.id and obj.id ~= object.id and
          new_x <= obj.x + obj.width-1 and new_x + object.width-1 >= obj.x
          and new_y <= obj.y + obj.height-1 and new_y + object.height-1 >= obj.y then
-         return true
+         return { hit = "object", object = object }
       end
    end
 
-
-   for x=new_x,new_x+object.width-1 do
-      for y=new_y,new_y+object.height-1 do
-         if current_room.grid[x][y].id == 'wall'
-            or current_room.grid[x][y].id == 'door' 
-            then 
-            return true
-         end
-         if current_room.grid[x][y].obj and current_room.grid[x][y].obj.class == "spikes" then
-            return "spikes"
-         end
-      end
-   end
    return false
 
 end
@@ -3361,6 +3714,8 @@ function drawDarkness()
 
    local darkness = current_room.darkness
    local dark_grid = {}
+   
+   -- TODO: Only calculate for areas in camera view
 
    for x=0,current_room.width-1 do
       dark_grid[x] = {}
@@ -3423,6 +3778,8 @@ function drawDarkness()
 
 end
 
+--- Menu
+
 --- Love callbacks
 
 function love.conf(t)
@@ -3455,13 +3812,21 @@ function love.load()
 
    love.window.setTitle( 'Low Res Adventure' )
 
-   initPlayer( 50, 50 )
-   loadNewRoom( "home" )
+   initPlayer( 30, 30 )
+   loadNewRoom( "boss2" )
    centerCamera()
 end
 
 function love.keypressed(key, scancode, isrepeat)
-   if key == 'escape' then love.event.quit() end
+   if key == 'escape' then 
+      if game_state ~= "menu" then
+         game_state_backup = game_state
+         game_state = "menu" 
+      else
+         game_state = game_state_backup
+      end
+   end
+   if key == 'q' then love.event.quit() end
 
    if key == 'kp+' then setZoom( zoom + 1 ) end
    if key == 'kp-' then setZoom( zoom - 1 ) end
@@ -3480,6 +3845,8 @@ function love.keypressed(key, scancode, isrepeat)
    end
    
    if key == 'r' then restartRoom() end
+
+   if key == 'f' then fireArrow( 12, 12, "down", "red" ) end
 end
 
 function love.keyreleased(key)
@@ -3641,41 +4008,46 @@ function love.draw()
       gfx.setBackgroundColor( BLACK )
       gfx.clear()
 
-      gfx.translate( -camera.x, -camera.y )
-      drawRoom()
-      drawTriggers()
-      drawEffects()
-      drawObjects()
-      drawEnemies()
-      drawPlayer()
-      drawDarkness()
-      gfx.translate( camera.x, camera.y )
+      if game_state == "menu" then
 
-      if love.keyboard.isDown("f") then 
-         gfx.setColor( 255, 255, 255, 255 )
-         gfx.draw( fpsText, 0, 0 )
-      end
-      if love.keyboard.isDown("e") then 
-         gfx.setColor( 255, 255, 255, 255 )
-         infoText:set("id_cnt:"..id_cnt)
-         gfx.draw( infoText, 0, 0 )
-      end
-      if love.keyboard.isDown("n") then 
-         gfx.setColor( 255, 255, 255, 255 )
-         infoText:set(current_room.name)
-         gfx.draw( infoText, 0, 0 )
-      end
-      if love.keyboard.isDown("m") and player.magnet_target then 
-         gfx.setColor( 255, 255, 255, 255 )
-         local mt = player.magnet_target
-         infoText:set("vx:" .. mt.velocity.x .. " vy:" .. mt.velocity.y)
-         gfx.draw( infoText, 0, 0 )
-      end
-      if love.keyboard.isDown("b") and current_room.objects.bomb then 
-         local bomb = current_room.objects.bomb
-         gfx.setColor( 255, 255, 255, 255 )
-         infoText:set( "xt:" .. bomb.x_move_ticks .. " vx:" .. bomb.velocity.x )
-         gfx.draw( infoText, 0, 0 )
+      else
+         gfx.translate( -camera.x, -camera.y )
+         drawRoom()
+         drawTriggers()
+         drawEffects()
+         drawObjects()
+         drawEnemies()
+         drawPlayer()
+         drawDarkness()
+         gfx.translate( camera.x, camera.y )
+
+         if love.keyboard.isDown("f") then 
+            gfx.setColor( 255, 255, 255, 255 )
+            gfx.draw( fpsText, 0, 0 )
+         end
+         if love.keyboard.isDown("e") then 
+            gfx.setColor( 255, 255, 255, 255 )
+            infoText:set("id_cnt:"..id_cnt)
+            gfx.draw( infoText, 0, 0 )
+         end
+         if love.keyboard.isDown("n") then 
+            gfx.setColor( 255, 255, 255, 255 )
+            infoText:set(current_room.name)
+            gfx.draw( infoText, 0, 0 )
+         end
+         if love.keyboard.isDown("m") and player.magnet_target then 
+            gfx.setColor( 255, 255, 255, 255 )
+            local mt = player.magnet_target
+            infoText:set("vx:" .. mt.velocity.x .. " vy:" .. mt.velocity.y)
+            gfx.draw( infoText, 0, 0 )
+         end
+         if love.keyboard.isDown("b") and current_room.objects.bomb then 
+            local bomb = current_room.objects.bomb
+            gfx.setColor( 255, 255, 255, 255 )
+            infoText:set( "xt:" .. bomb.x_move_ticks .. " vx:" .. bomb.velocity.x )
+            gfx.draw( infoText, 0, 0 )
+         end
+
       end
 
    gfx.setCanvas()

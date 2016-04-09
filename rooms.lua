@@ -192,8 +192,10 @@ roomDatabase = {
          { style = "rectangle", mark = "drawing", x = 1, y = 11, width = 62, height = 7 },
       },
       objects = {
-         { id = "torch1", class = "torch", on=true, x = 2, y = 2, power = 1 },
-         { id = "torch2", class = "torch", on=true, x = 2, y = 22, power = 1 },
+         { id = "torch1", class = "torch", on=true, x = 2, y = 5, power = 1 },
+         { id = "torch2", class = "torch", on=true, x = 2, y = 19, power = 1 },
+         { id = "torch3", class = "torch", on=true, x = 57, y = 5, power = 1 },
+         { id = "torch4", class = "torch", on=true, x = 57, y = 19, power = 1 },
 
          { id = "b1", class = "block", color = "black", pushable = true, resistance = 2, x = 22, y = 2, width = 5, height = 5 },
          { id = "b2", class = "block", color = "black", pushable = true, resistance = 2, x = 27, y = 2, width = 5, height = 5 },
@@ -292,8 +294,8 @@ roomDatabase = {
    magnetthrone = { width = 64, height = 64,
       regenerate = true,
       doors = {
-         { side = "right", hidden = true, start = 26, finish = 37, to = "magnetpuzzle1" },
-         { side = "down", closed_on = 0, start = 26, finish = 37, to = "boss1", to_y = 58 },
+         { side = "right", hidden = true, start = 26, finish = 37, to = "magnetpuzzle1", to_y = 69  },
+         { side = "down", closed_on = 0, start = 26, finish = 37, to = "boss1", to_x = 58 },
       },
       floor = {
          { style = "magnet", mark = "drawing", x = 7, y = 14 },
@@ -336,16 +338,12 @@ roomDatabase = {
          { id = "spikes", class = "spikes", facing = "right", x = 2, y = 3, width = 4, height = 46 },
          { id = "b1", class="block", color="red", magnetic=true, x=30, y=32, width=4, height=4 },
          { id = "b2", class="block", color="red", magnetic=true, x=34, y=32, width=4, height=4 },
-         { id = "b3", class="block", color="red", magnetic=true, x=38, y=32, width=4, height=4 },
          { id = "b5", class="block", color="red", magnetic=true, x=30, y=36, width=4, height=4 },
          { id = "b6", class="block", color="red", magnetic=true, x=34, y=36, width=4, height=4 },
-         { id = "b7", class="block", color="red", magnetic=true, x=38, y=36, width=4, height=4 },
          { id = "b9", class="block", color="red", magnetic=true, x=30, y=40, width=4, height=4 },
          { id = "b10", class="block", color="red", magnetic=true, x=34, y=40, width=4, height=4 },
-         { id = "b11", class="block", color="red", magnetic=true, x=38, y=40, width=4, height=4 },
          { id = "b13", class="block", color="red", magnetic=true, x=30, y=44, width=4, height=4 },
          { id = "b14", class="block", color="red", magnetic=true, x=34, y=44, width=4, height=4 },
-         { id = "b15", class="block", color="red", magnetic=true, x=38, y=44, width=4, height=4 },
       },
 
       enemies = {
@@ -380,7 +378,7 @@ roomDatabase = {
 
    magnetpuzzle2 = { width = 44, height = 64,
       doors = {
-         { side = "up", start = 17, finish = 26, to = "home", to_x = 30 },
+         { side = "up", start = 17, finish = 26, to = "magnethome", to_x = 30 },
          { side = "down", start = 19, finish = 24, to = "magnetpassage1", to_x = 4 },
       },
       floor = {
@@ -424,34 +422,320 @@ roomDatabase = {
       },
    },
 
-   magnetpuzzle3 = { width = 64, height = 48,
+   magnethome = { width = 64, height = 64,
+      darkness = 80,
       doors = {
-         { side = "left", start = 26, finish = 37, to = "home" },
-         { side = "up", start = 26, finish = 37, to = "home" },
+         { side = "left", start = 26, finish = 37, to = "magnetpassage2", to_y = 6 },
+         { side = "up", start = 26, finish = 37, to = "bossentry2", to_x = 18 },
+         { side = "right", start = 26, finish = 37, to = "magnetpuzzle4" },
+         { side = "down", start = 26, finish = 37, to = "magnetpuzzle2", to_x = 20 },
       },
       floor = {
-         { style = "rectangle", mark = "wall", x = 12, y = 30, width = 40, height = 2 },
-         { style = "rectangle", mark = "wall", x = 50, y = 2, width = 2, height = 28 },
-         { style = "deer", mark = "drawing", x = 28, y = 35 },
+         { style = "text", text = "5", x = 17, y = 16 },
+         { style = "text", text = "8", x = 29, y = 16 },
+         { style = "text", text = "2", x = 41, y = 16 },
+
+         { style = "text", text = "1", x = 17, y = 28 },
+         { style = "text", text = "9", x = 29, y = 28 },
+         { style = "text", text = "4", x = 41, y = 28 },
+
+         { style = "text", text = "7", x = 17, y = 40 },
+         { style = "text", text = "3", x = 29, y = 40 },
+         { style = "text", text = "6", x = 41, y = 40 },
+
+         { style = "deer", mark = "drawing", x = 27, y = 5 },
+         { style = "eye", mark = "drawing", x = 28, y = 53 },
+         { style = "companion", mark = "drawing", x = 5, y = 29 },
+         { style = "heart", mark = "drawing", x = 53, y = 29 },
       },
       objects = {
-         { id = "block", class = "block", color = "red", magnetic = true, resistance = 6, x = 12, y = 2, width = 10, height = 28 },
-         { id = "block2", class = "block", color = "red", magnetic = true, resistance = 1, x = 44, y = 2, width = 6, height = 3 },
+         { id = "torch1", class = "torch", on=true, x = 6, y = 6, power = 20},
+         { id = "torch2", class = "torch", on=true, x = 53, y = 6, power = 20},
+         { id = "torch3", class = "torch", on=true, x = 6, y = 53, power = 20},
+         { id = "torch4", class = "torch", on=true, x = 53, y = 53, power = 20},
+         { id = "giant", class = "block", color = "red", magnetic = true, resistance = 15, x = 14, y = 14, width = 36, height = 36 },
+      },
+   },
+
+   magnetpassage2 = { width = 100, height = 20,
+      doors = {
+         { side = "up", start = 70, finish = 81, to = "magnetpuzzle3", to_x = 8 },
+         { side = "right", start = 5, finish = 14, to = "magnethome", to_y = 30 },
+         { side = "left", start = 5, finish = 14, to = "home", to_y = 30 },
+      },
+      objects = {
+         { id = "b1", class="block", color="red", magnetic=true, x=44, y=2, width=4, height=4 },
+         { id = "b2", class="block", color="red", magnetic=true, x=44, y=6, width=4, height=4 },
+         { id = "b3", class="block", color="red", magnetic=true, x=44, y=10, width=4, height=4 },
+         { id = "b4", class="block", color="red", magnetic=true, x=44, y=14, width=4, height=4 },
+         { id = "b5", class="block", color="red", magnetic=true, x=48, y=2, width=4, height=4 },
+         { id = "b6", class="block", color="red", magnetic=true, x=48, y=6, width=4, height=4 },
+         { id = "b7", class="block", color="red", magnetic=true, x=48, y=10, width=4, height=4 },
+         { id = "b8", class="block", color="red", magnetic=true, x=48, y=14, width=4, height=4 },
       },
       enemies = {
-         { id = "blob1", class = "blob", color = "black", x = 24, y = 8 },
-         { id = "blob2", class = "blob", color = "black", x = 28, y = 17 },
-         { id = "blob3", class = "blob", color = "black", x = 36, y = 12 },
+         { id = "blob1", class = "blob", color = "red", magnetic = true, resistance = 2, x = 8, y = 3 },
+         { id = "blob2", class = "blob", color = "red", magnetic = true, resistance = 2, x = 6, y = 11 },
+         { id = "blob3", class = "blob", color = "red", magnetic = true, resistance = 2, x = 15, y = 2 },
+         { id = "blob4", class = "blob", color = "red", magnetic = true, resistance = 2, x = 24, y = 10 },
+      },
+
+   },
+
+   magnetpuzzle3 = { width = 48, height = 64,
+      doors = {
+         { side = "down", start = 4, finish = 15, to = "magnetpassage2", to_x = 74 },
+         { side = "up", start = 4, finish = 15, to = "numberpuzzle1", to_x = 30 },
+      },
+      floor = {
+         { style = "rectangle", mark = "black", x = 18, y = 2, width = 2, height = 60 },
+         { style = "rectangle", mark = "white", x = 20, y = 2, width = 2, height = 60 },
+         { style = "apple", mark = "drawing", x = 30, y = 8 },
+         { style = "apple", mark = "drawing", x = 30, y = 27 },
+         { style = "apple", mark = "drawing", x = 30, y = 46 },
+      },
+      objects = {
+         { id = "lock", class = "lock", locks = 3, x = 2, y = 1, width = 16, height = 3 },
+      },
+      enemies = {
+         { id = "archer1", class = "archer", color = "red", targets = { "lock" }, x = 35, y = 6 },
+         { id = "archer2", class = "archer", color = "red", targets = { "lock" }, x = 32, y = 25 },
+         { id = "archer3", class = "archer", color = "red", targets = { "lock" }, x = 36, y = 39 },
+      },
+   },
+
+   numberpuzzle1 = { width = 64, height = 64,
+      darkness = 80,
+      doors = {
+         { side = "down", start = 26, finish = 37, to = "magnetpuzzle3", to_x = 8 },
+         { side = "right", start = 26, finish = 37, to = "bossentry2" },
+      },
+      floor = {
+         { style = "deer", mark = "drawing", x = 27, y = 5 },
+         { style = "eye", mark = "drawing", x = 28, y = 53 },
+         { style = "companion", mark = "drawing", x = 5, y = 29 },
+         { style = "heart", mark = "drawing", x = 53, y = 29 },
+      },
+      objects = {
+         { id = "lock", class = "lock", locks = 9, x = 60, y = 24, width = 3, height = 16 },
+         { id = "torch1", class = "torch", on=true, x = 6, y = 6, power = 20},
+         { id = "torch2", class = "torch", on=true, x = 53, y = 6, power = 20},
+         { id = "torch3", class = "torch", on=true, x = 6, y = 53, power = 20},
+         { id = "torch4", class = "torch", on=true, x = 53, y = 53, power = 20},
       },
       triggers = {
+         { id = "button5", class = "numberbutton", number = 5, targets = { "lock" }, x = 16, y = 16, width = 7, height = 7 },
+         { id = "button8", class = "numberbutton", number = 8, targets = { "lock" }, x = 28, y = 16, width = 7, height = 7 },
+         { id = "button2", class = "numberbutton", number = 2, targets = { "lock" }, x = 40, y = 16, width = 7, height = 7 },
+
+         { id = "button1", class = "numberbutton", number = 1, targets = { "lock" }, x = 16, y = 28, width = 7, height = 7 },
+         { id = "button9", class = "numberbutton", number = 9, targets = { "lock" }, x = 28, y = 28, width = 7, height = 7 },
+         { id = "button4", class = "numberbutton", number = 4, targets = { "lock" }, x = 40, y = 28, width = 7, height = 7 },
+
+         { id = "button7", class = "numberbutton", number = 7, targets = { "lock" }, x = 16, y = 40, width = 7, height = 7 },
+         { id = "button3", class = "numberbutton", number = 3, targets = { "lock" }, x = 28, y = 40, width = 7, height = 7 },
+         { id = "button6", class = "numberbutton", number = 6, targets = { "lock" }, x = 40, y = 40, width = 7, height = 7 },
       },
+
+   },
+
+   magnetpuzzle4 = { width = 64, height = 64,
+      doors = {
+         { side = "left", start = 26, finish = 37, to = "magnethome", to_y = 30 },
+         { side = "up", start = 26, finish = 37, to = "magnetpuzzle5", to_x = 6 },
+      },
+      floor = {
+      },
+
+   },
+
+   magnetpuzzle5 = { width = 18, height = 64,
+      doors = {
+         { side = "up", start = 3, finish = 10, to = "magnetpuzzle6", to_x = 30 },
+         { side = "down", start = 3, finish = 10, to = "magnetpuzzle4", to_x = 30 },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 12, y = 2, width = 4, height = 28 },
+         { style = "rectangle", mark = "wall", x = 12, y = 42, width = 4, height = 20 },
+         { style = "rectangle", mark = "black", x = 14, y = 0, width = 4, height = 28 },
+         { style = "rectangle", mark = "black", x = 14, y = 44, width = 4, height = 20 },
+      },
+      objects = {
+         { id = "block", class = "block", color = "red", magnetic = true, resistance = 2, x = 2, y = 40, width = 10, height = 10 },
+         { id = "chain", class = "chain", link = "block", length = 10, x = 6, y = 32 },
+      }
+   },
+
+   magnetpuzzle6 = { width = 48, height = 64,
+      doors = {
+         { side = "down", start = 26, finish = 37, to = "magnetpuzzle5", to_x = 6 },
+         { side = "up", start = 27, finish = 36, to = "lamppuzzle1", to_x = 12 },
+         { side = "left", start = 26, finish = 37, to = "bossentry2" },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 30, y = 12, width = 2, height = 40 },
+         { style = "rectangle", mark = "wall", x = 2, y = 12, width = 28, height = 2 },
+         { style = "heart", mark = "drawing", x = 36, y = 14 },
+         { style = "heart", mark = "drawing", x = 36, y = 30 },
+         { style = "heart", mark = "drawing", x = 36, y = 46 },
+         { style = "kirby", mark = "drawing", x = 10, y = 5 },
+         { style = "kirby", mark = "drawing", x = 10, y = 54 },
+      },
+      objects = {
+         { id = "block", class = "block", color = "red", magnetic = true, resistance = 6, x = 2, y = 42, width = 28, height = 10 },
+         { id = "block2", class = "block", color = "red", magnetic = true, resistance = 1, x = 2, y = 14, width = 3, height = 6 },
+      },
+      enemies = {
+         { id = "blob1", class = "blob", color = "black", x = 8, y = 20 },
+         { id = "blob2", class = "blob", color = "black", x = 17, y = 24 },
+         { id = "blob3", class = "blob", color = "black", x = 12, y = 32 },
+      },
+   },
+
+   lamppuzzle1 = { width = 26, height = 52,
+      darkness = 160,
+      doors = {
+         { side = "down", start = 9, finish = 16, to = "magnetpuzzle6", to_x = 30 },
+         { side = "left", closed_on = 3, start = 3, finish = 10, to = "lampthrone", to_y = 30 },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 2, y = 12, width = 5, height = 38 },
+         { style = "rectangle", mark = "wall", x = 19, y = 2, width = 5, height = 48 },
+         { style = "rectangle", mark = "black", x = 0, y = 39, width = 5, height = 14 },
+         { style = "rectangle", mark = "black", x = 21, y = 39, width = 5, height = 14 },
+         { style = "rectangle", mark = "black", x = 21, y = 0, width = 5, height = 10 },
+
+      },
+      objects = {
+         { id = "lock", class = "lock", locks = 6, targets = { "torch1", "torch2", "torch3", "torch4", "torch5", "torch6" }, x = 7, y = 38, width = 12, height = 3 },
+         { id = "torch1", class = "torch", on=false, to_timeout = 50, targets = { "lock" }, x = 2, y = 12, power = 15 },
+         { id = "torch2", class = "torch", on=false, to_timeout = 60, targets = { "lock" }, x = 2, y = 21, power = 15 },
+         { id = "torch3", class = "torch", on=false, to_timeout = 70, targets = { "lock" }, x = 2, y = 30, power = 15 },
+         { id = "torch4", class = "torch", on=false, to_timeout = 30, targets = { "lock" }, x = 19, y = 12, power = 15 },
+         { id = "torch5", class = "torch", on=false, to_timeout = 20, targets = { "lock" }, x = 19, y = 22, power = 15 },
+         { id = "torch6", class = "torch", on=false, to_timeout = 90, targets = { "lock" }, x = 19, y = 30, power = 15 },
+
+      },
+   },
+
+   bossentry2 = { width = 40, height = 64,
+      doors = {
+         { side = "left", start = 26, finish = 37, to = "numberpuzzle1", to_y = 30 },
+         { side = "right", start = 26, finish = 37, to = "magnetpuzzle6", to_y = 30 },
+         { side = "down", start = 14, finish = 25, to = "magnethome", to_x = 30 },
+         { side = "up", start = 14, finish = 25, to = "boss2", to_x = 30 },
+      },
+      floor = {
+         { style = "rectangle", mark = "wall", x = 2, y = 15, width = 10, height = 2 },
+         { style = "rectangle", mark = "wall", x = 10, y = 15, width = 2, height = 28 },
+         { style = "rectangle", mark = "wall", x = 8, y = 43, width = 4, height = 2 },
+         { style = "rectangle", mark = "wall", x = 8, y = 43, width = 2, height = 8 },
+         { style = "rectangle", mark = "drawing", x = 2, y = 43, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 2, y = 45, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 2, y = 47, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 2, y = 49, width = 6, height = 1 },
+
+         { style = "rectangle", mark = "wall", x = 28, y = 15, width = 10, height = 2 },
+         { style = "rectangle", mark = "wall", x = 28, y = 15, width = 2, height = 28 },
+         { style = "rectangle", mark = "wall", x = 28, y = 43, width = 4, height = 2 },
+         { style = "rectangle", mark = "wall", x = 30, y = 43, width = 2, height = 8 },
+         { style = "rectangle", mark = "drawing", x = 32, y = 43, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 32, y = 45, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 32, y = 47, width = 6, height = 1 },
+         { style = "rectangle", mark = "drawing", x = 32, y = 49, width = 6, height = 1 },
+
+         { style = "rectangle", mark = "drawing", x = 15, y = 1, width = 10, height = 62 },
+
+      },
+      objects = {
+         { id = "torch1", class = "torch", on=true, x = 3, y = 3, power = 2 },
+         { id = "torch2", class = "torch", on=true, x = 3, y = 56, power = 2 },
+         { id = "torch3", class = "torch", on=true, x = 32, y = 3, power = 2 },
+         { id = "torch4", class = "torch", on=true, x = 32, y = 56, power = 2 },
+
+         { id = "leftlock", class = "lock", locks = 1, x = 2, y = 48, width = 6, height = 3 },
+         { id = "rightlock", class = "lock", locks = 1, x = 32, y = 48, width = 6, height = 3 },
+         { id = "centerlock", class = "lock", locks = 2, x = 12, y = 1, width = 16, height = 3 },
+
+         { id = "b1", class = "block", color = "black", pushable = true, resistance = 2, x = 12, y = 19, width = 4, height = 4 },
+         { id = "b2", class = "block", color = "black", pushable = true, resistance = 2, x = 12, y = 27, width = 4, height = 4 },
+         { id = "b3", class = "block", color = "black", pushable = true, resistance = 2, x = 12, y = 35, width = 4, height = 4 },
+
+         { id = "b4", class = "block", color = "black", pushable = true, resistance = 2, x = 16, y = 15, width = 4, height = 4 },
+         { id = "b5", class = "block", color = "black", pushable = true, resistance = 2, x = 16, y = 23, width = 4, height = 4 },
+         { id = "b6", class = "block", color = "black", pushable = true, resistance = 2, x = 16, y = 27, width = 4, height = 4 },
+         { id = "b7", class = "block", color = "black", pushable = true, resistance = 2, x = 16, y = 35, width = 4, height = 4 },
+         { id = "b8", class = "block", color = "black", pushable = true, resistance = 2, x = 16, y = 39, width = 4, height = 4 },
+
+         { id = "b9", class = "block", color = "black", pushable = true, resistance = 2, x = 20, y = 15, width = 4, height = 4 },
+         { id = "m10", class = "block", color = "red", magnetic = true, resistance = 1, x = 20, y = 19, width = 4, height = 4 },
+         { id = "b11", class = "block", color = "black", pushable = true, resistance = 2, x = 20, y = 23, width = 4, height = 4 },
+         { id = "b12", class = "block", color = "black", pushable = true, resistance = 2, x = 20, y = 31, width = 4, height = 4 },
+         { id = "b13", class = "block", color = "black", pushable = true, resistance = 2, x = 20, y = 39, width = 4, height = 4 },
+
+         { id = "b14", class = "block", color = "black", pushable = true, resistance = 2, x = 24, y = 19, width = 4, height = 4 },
+         { id = "b15", class = "block", color = "black", pushable = true, resistance = 2, x = 24, y = 23, width = 4, height = 4 },
+         { id = "b16", class = "block", color = "black", pushable = true, resistance = 2, x = 24, y = 27, width = 4, height = 4 },
+         { id = "b17", class = "block", color = "black", pushable = true, resistance = 2, x = 24, y = 35, width = 4, height = 4 },
+      },
+      triggers = {
+         { id = "leftbutton", class = "button", targets = { "leftlock", "centerlock" }, x = 3, y = 18, width = 6, height = 6 },
+         { id = "rightbutton", class = "button", targets = { "rightlock", "centerlock" }, x = 31, y = 18, width = 6, height = 6 },
+
+      },
+   },
+
+   boss2 = { width = 64, height = 64,
+      darkness = 180,
+      doors = {
+         { side = "up", start = 26, finish = 37, to = "lampthrone" },
+         { side = "down", start = 26, finish = 37, to = "bossentry2", to_x = 18 },
+      },
+      floor = {
+         { style = "line", mark = "black", x = 36, y = 56, 
+            moves = { { dir = "right", dist = 24 }, 
+                      { dir = "down", dist = 4 },
+                      { dir = "left", dist = 4 },
+                      { dir = "up", dist = 57 },
+                      { dir = "right", dist = 4 },
+                      { dir = "down", dist = 4 },
+                      { dir = "left", dist = 57 },
+                      { dir = "up", dist = 4 },
+                      { dir = "right", dist = 4 },
+                      { dir = "down", dist = 57 },
+                      { dir = "left", dist = 4 },
+                      { dir = "up", dist = 4 },
+                      { dir = "right", dist = 24 },
+                   } },
+         { style = "rectangle", mark = "black", x = 5, y = 8, width = 1, height = 48 },
+         { style = "rectangle", mark = "white", x = 6, y = 8, width = 1, height = 48 },
+         { style = "rectangle", mark = "black", x = 58, y = 8, width = 1, height = 48 },
+         { style = "rectangle", mark = "white", x = 57, y = 8, width = 1, height = 48 },
+         { style = "rectangle", mark = "black", x = 8, y = 5, width = 48, height = 1 },
+         { style = "rectangle", mark = "white", x = 8, y = 6, width = 48, height = 1 },
+         { style = "rectangle", mark = "black", x = 8, y = 58, width = 20, height = 1 },
+         { style = "rectangle", mark = "white", x = 8, y = 57, width = 20, height = 1 },
+         { style = "rectangle", mark = "black", x = 36, y = 58, width = 20, height = 1 },
+         { style = "rectangle", mark = "white", x = 36, y = 57, width = 20, height = 1 },
+
+         { style = "rectangle", mark = "white", x = 4, y = 4, width = 3, height = 3 },
+         { style = "rectangle", mark = "white", x = 57, y = 57, width = 3, height = 3 },
+
+         { style = "image", source = "res/boxingmat.png", x = 28, y = 28 },
+      },
+      objects = {
+         { id = "mainlight", class = "spotlight", x = 31, y = 31, power = 15 },
+         { id = "redcorner", class = "block", color = "red", x = 57, y = 4, width = 3, height = 3 },
+         { id = "bluecorner", class = "block", color = "blue", x = 4, y = 57, width = 3, height = 3 },
+      }
+
    },
 
    lampthrone = { width = 64, height = 64,
       regenerate = true,
       darkness = 105,
       doors = {
-         { side = "right", hidden = true, start = 26, finish = 37, to = "home" },
+         { side = "right", hidden = true, start = 26, finish = 37, to = "lamppuzzle1", to_y = 5 },
          { side = "down", closed_on = 0, start = 26, finish = 37 },
       },
       floor = {
@@ -670,6 +954,41 @@ roomDatabase = {
          { id = "altartorch1", class = "torch", on=true, x = 23, y = 35, power = 20 },
          { id = "altartorch2", class = "torch", on=true, x = 36, y = 35, power = 20 },
       }
+   },
+
+   windthrone = { width = 64, height = 64,
+      regenerate = true,
+      doors = {
+         { side = "right", hidden = true, start = 26, finish = 37, to = "home" },
+         { side = "down", closed_on = 0, start = 26, finish = 37 },
+      },
+      floor = {
+         { style = "sword", mark = "drawing", x = 6, y = 13 },
+         { style = "sword", mark = "drawing", x = 49, y = 13 },
+         { style = "miasmamark", mark = "drawing", x = 56, y = 30 },
+         { style = "image", source = "res/sword_explanation.png", x = 9, y = 45 },
+         { style = "rectangle", mark = "wall", x = 50, y = 24, width = 12, height = 2 },
+         { style = "rectangle", mark = "wall", x = 50, y = 24, width = 2, height = 17 },
+         { style = "rectangle", mark = "wall", x = 2, y = 24, width = 12, height = 2 },
+         { style = "rectangle", mark = "wall", x = 2, y = 38, width = 12, height = 2 },
+         { style = "altar" },
+      },
+      objects = {
+         { class = "miasma", x = 56, y = 30, width = 2, height = 2 },
+         { id = "sword", class = "sword", x = 28, y = 18, width = 8, height = 8 },
+         { id = "lock", class = "lock", locks = 1, x = 52, y = 38, width = 10, height = 3 },
+         { id = "block", class = "block", color = "violet", swordable = true, x = 10, y = 26, width = 4, height = 12 },
+
+         { id = "torch1", class = "torch", on=true, x = 2, y = 2, power = 20 },
+         { id = "torch2", class = "torch", on=true, x = 2, y = 57, power = 20 },
+         { id = "torch3", class = "torch", on=true, x = 57, y = 2, power = 20 },
+         { id = "torch4", class = "torch", on=true, x = 57, y = 57, power = 20 },
+         { id = "altartorch1", class = "torch", on=true, x = 23, y = 35, power = 20 },
+         { id = "altartorch2", class = "torch", on=true, x = 36, y = 35, power = 20 },
+      },
+      triggers = {
+         { id = "button1", class = "button", targets = { "lock" }, x = 2, y = 28, width = 6, height = 8 },
+      },
    },
 
    swordthrone = { width = 64, height = 64,
